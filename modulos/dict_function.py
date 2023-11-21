@@ -1,0 +1,167 @@
+dict_function = {
+    'expo_Img_Button':{
+        'function': 'expo_Img_Button',
+        'description': 'Image Files (*.png)',
+        'search_dialog': 'PDF Files (*.pdf)',
+        'extension': '.png',
+        'items': {},
+        'lineEdit':'Aguardando arquivo (.pdf)',
+        'context_menu':'toolBox',
+        'validate':['replace_lineEdit',],
+    },
+    'expo_pg_Button':{
+        'function': 'expo_pg_Button',
+        'description': 'PDF Files (*.pdf)',
+        'search_dialog': 'PDF Files (*.pdf)',
+        'extension': '.pdf',
+        'items': {
+            'Arquivos Separados':'separado',
+            'Único Arquivo' : 'unico',
+        },
+        'lineEdit':'Aguardando arquivo (.pdf)',
+        'context_menu':'toolBox',
+        'validate':['replace_lineEdit',],
+    },
+    'pdf_to_word':{
+        'function': 'pdf_to_word',
+        'description': 'Word Files (*.docx)',
+        'search_dialog': 'PDF Files (*.pdf)',
+        'extension': '.docx',
+        'items': {},
+        'lineEdit':'Aguardando arquivo (.pdf)',
+        'context_menu':'toolBox',
+        'validate':['replace_lineEdit',],
+    },
+    'pdf_to_excel':{
+        'function': 'pdf_to_excel',
+        'description': 'Excel Files (*.xlsx)',
+        'search_dialog': 'PDF Files (*.pdf)',
+        'extension': '.xlsx',
+        'items': {},
+        'lineEdit':'Aguardando arquivo (.pdf)',
+        'context_menu':'toolBox',
+        'validate':['replace_lineEdit',],
+    },
+    'word_to_pdf':{
+        'function': 'word_to_pdf',
+        'description': 'PDF Files (*.pdf)',
+        'search_dialog': 'Word Files (*.docx , *.doc)',
+        'extension': '.pdf',
+        'items': {},
+        'lineEdit':'Aguardando arquivo (.docx , .doc)',
+        'context_menu':'toolBox',
+        'validate':['replace_lineEdit',],
+    },
+    'excel_to_pdf':{
+        'function': 'excel_to_pdf',
+        'description': 'PDF Files (*.pdf)',
+        'search_dialog': 'Excel Files (*.xlsx , *.xls)',
+        'extension': '.pdf',
+        'items': {},
+        'lineEdit':'Aguardando arquivo (.xlsx , .xls)',
+        'context_menu':'toolBox',
+        'validate':['replace_lineEdit',],
+    },
+    'de_ate_radioButton':{
+        'function': None,
+        'description': None,
+        'search_dialog': None,
+        'extension': None,
+        'items': {},
+        'lineEdit':None,
+        'context_menu':'page_n_pages',
+        'validate':[
+            'validate_select_file',
+        ],
+    },
+    'pages_radioButton':{
+        'function': None,
+        'description': None,
+        'search_dialog': None,
+        'extension': None,
+        'items': {},
+        'lineEdit':None,
+        'context_menu':'page_n_pages',
+        'validate':[
+            'validate_select_file',
+        ],
+        
+    },
+    'de_Edit':{
+        'function': None,
+        'description': None,
+        'search_dialog': None,
+        'extension': None,
+        'items': {},
+        'lineEdit':None,
+        'context_menu':'page_n_pages',
+        'validate':[
+            'validate_select_file',
+        ],
+        
+    },
+    'ate_Edit':{
+    'function': None,
+    'description': None,
+    'search_dialog': None,
+    'extension': None,
+    'items': {},
+    'lineEdit':None,
+    'context_menu':'page_n_pages',
+    'validate':[
+        'validate_select_file',
+        ],
+     
+    },
+    'pages_Edit':{
+    'function': None,
+    'description': None,
+    'search_dialog': None,
+    'extension': None,
+    'items': {},
+    'lineEdit':None,
+    'context_menu':'page_n_pages',
+    'validate':[
+        'validate_select_file',
+        ],
+     
+    },
+    'buscar_Button':{
+        'function': 'search_file',
+        'description': None,
+        'search_dialog': None,
+        'extension': None,
+        'items': {},
+        'lineEdit':None,
+        'context_menu':'gridLayout_4',
+        'validate':[
+            'toolBox_one_checked_item',
+            ],
+    },
+    'toolBox':{
+        'function': None,
+        'description': None,
+        'search_dialog': None,
+        'extension': None,
+        'items': {},
+        'lineEdit':None,
+        'context_menu':'gridLayout_5',
+        'validate':[],
+    },
+    'confirm_Button':{
+        'function': 'confirm_Button',
+        'description': None,
+        'search_dialog': None,
+        'extension': None,
+        'items': {},
+        'lineEdit':None,
+        'context_menu':'verticalLayout_6',
+        'validate':[
+            'validate_confirm_Button',
+            ],
+    },
+}
+
+list_expo_pg_Button = [
+    item for item in dict_function['expo_pg_Button']['items']
+    ]
