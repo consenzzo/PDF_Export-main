@@ -14,6 +14,8 @@ import io
 from reportlab.pdfgen import canvas
 from PIL import Image
 from openpyxl import load_workbook
+from icon_button import icon_button
+import base64
 
 
 def add_pages(self:Ui_Menu, sender):
@@ -165,6 +167,29 @@ def save_file(self: Ui_Menu, sender):
             new_pdf.save(save_path)
             new_pdf.close()
             QMessageBox.information(self, "Sucesso", "PDF salvo com sucesso!")
+            self.listWidget.clear()
+
+            # Remover a página correspondente do dicionário de ícones
+            self.icon_dict.clear()
+
+            total_page = len(self.icon_dict)
+            self.n_pg_total.setText(f'/ {total_page}')
+            item_row = self.listWidget.count()
+            if item_row == 0:
+                    for label_name, icon_data in icon_button.items():
+                        if label_name == "display":
+                            base64_image = icon_data["base64_data"]
+                            image_data = base64.b64decode(base64_image)
+                            # Cria um QPixmap a partir da imagem decodificada
+                            pixmap = QPixmap()
+                            pixmap.loadFromData(image_data)
+                            icon = QIcon(pixmap)
+                            # Obtém o QLabel pelo nome e define o ícone
+                            label = getattr(self, label_name)  # Obtém o QLabel pelo nome
+                            label.setPixmap(pixmap)
+                            self.n_pg_edit.setText("")
+            refresh_save(self,save_path)
+
 
 
 
@@ -324,3 +349,54 @@ def word_to_pdf( file_path):
     pdf_file = os.path.join(os.path.dirname(file_path), f"{os.path.splitext(os.path.basename(file_path))[0]}.pdf")
     convert(file_path , pdf_file)
     return pdf_file
+
+
+def refresh_save(self:Ui_Menu,save_path):
+    file_path = save_path
+    excel_or_word = False
+
+    original_file_path = file_path
+    if file_path.lower().endswith(('.xlsx', '.xls')):
+        file_excel =  excel_file(self, file_path)
+        file_path = file_excel
+        excel_or_word = True
+    elif file_path.lower().endswith(('.docx' , '.doc')):
+        file_word =  word_file(self, file_path)
+        file_path = file_word
+        excel_or_word = True
+
+    pdf_document = fitz.open(file_path)
+
+    for page_num in range(pdf_document.page_count):
+        page = pdf_document.load_page(page_num)
+        img_bytes = page.get_pixmap()
+        img_bytes = img_bytes.tobytes()
+        
+
+        item_data = {
+            "atual": str(len(self.icon_dict) + 1),
+            "icon_bytes": img_bytes,  # Bytes do ícone para armazenar
+            "local":original_file_path,
+            "n_pag_original":page_num,
+            "guidance": 0
+        }
+        self.icon_dict[len(self.icon_dict) + 1] = item_data
+
+        pixmap = QPixmap()
+        pixmap.loadFromData(img_bytes)
+
+        list_item = QListWidgetItem()
+        pixmap = pixmap.scaledToHeight(200, Qt.SmoothTransformation)
+        list_item.setIcon(QIcon(pixmap))
+        list_item.setSizeHint(QSize(pixmap.size()))  # Defina o tamanho desejado
+        self.listWidget.addItem(list_item)
+                            
+
+    pdf_document.close()
+    if excel_or_word == True:
+        os.remove(file_path)
+    excel_or_word = False
+
+    total_page = len(self.icon_dict)
+    self.n_pg_total.setText(f'/ {total_page}')
+    print("PRONTO, é o arquivo novo ")
