@@ -11,7 +11,9 @@ import xlwings as xw
 from pathlib import Path
 from docx2pdf import convert
 import io
-
+from reportlab.pdfgen import canvas
+from PIL import Image
+from openpyxl import load_workbook
 
 
 def add_pages(self:Ui_Menu, sender):
@@ -25,7 +27,7 @@ def add_pages(self:Ui_Menu, sender):
             excel_or_word = False
             file_dialog = QFileDialog()
             file_dialog.setFileMode(QFileDialog.ExistingFiles)
-            file_dialog.setNameFilter("Arquivos PDF (*.pdf);;Imagens (*.png *.jpeg);;Excel (*.xlsx *.xls);; Word (*.docx , *.doc)")
+            file_dialog.setNameFilter("All (*.pdf *.png *.jpeg *.xlsx *.xls *.docx , *.doc);;Arquivos PDF (*.pdf);;Imagens (*.png *.jpeg);;Excel (*.xlsx *.xls);; Word (*.docx , *.doc)")
 
             file_dialog.setViewMode(QFileDialog.List)
 
@@ -33,12 +35,13 @@ def add_pages(self:Ui_Menu, sender):
                 file_paths = file_dialog.selectedFiles()
 
                 for file_path in file_paths:
+                    original_file_path = file_path
                     if file_path.lower().endswith(('.xlsx', '.xls')):
-                        file_excel =  excel_file(self, file_paths)
+                        file_excel =  excel_file(self, file_path)
                         file_path = file_excel
                         excel_or_word = True
                     elif file_path.lower().endswith(('.docx' , '.doc')):
-                        file_word =  word_file(self, file_paths)
+                        file_word =  word_file(self, file_path)
                         file_path = file_word
                         excel_or_word = True
 
@@ -53,7 +56,7 @@ def add_pages(self:Ui_Menu, sender):
                         item_data = {
                             "atual": str(len(self.icon_dict) + 1),
                             "icon_bytes": img_bytes,  # Bytes do ícone para armazenar
-                            "local":file_path,
+                            "local":original_file_path,
                             "n_pag_original":page_num,
                             "guidance": 0
                         }
@@ -98,7 +101,49 @@ def save_file(self: Ui_Menu, sender):
                 original_page_number = int(page_data["n_pag_original"])  # Número da página original
                 position = page_data["guidance"]
 
-                pdf_document = fitz.open(original_file_path)
+                if os.path.exists(original_file_path):
+                     # Se não for um PDF, verificar outras extensões
+                    pdf_document = None
+                    for ext in [".pdf",".png", ".jpeg", ".xlsx", ".xls", ".docx", ".doc"]:
+                        alternative_path = os.path.splitext(original_file_path)[0] + ext
+                        if os.path.exists(alternative_path):
+
+                            if ext in (".pdf"):
+                                pdf_document = fitz.open(original_file_path)
+                                continue
+
+                            elif ext in (".png", ".jpeg"):
+                                img = Image.open(original_file_path)
+                                pdf_document = fitz.open()
+                                temp_pdf_paths = image2pdf(img)
+                                pdf_document.insert_pdf(fitz.open(temp_pdf_paths))
+                                os.remove(temp_pdf_paths)
+                                continue
+
+
+                            elif ext in ( ".xlsx", ".xls"):
+                                temp_pdf_paths = excel_to_pdf(alternative_path)
+                                pdf_document = fitz.open(temp_pdf_paths)
+                                continue
+                                
+                                
+
+                            elif ext in (".docx", ".doc"):
+                                temp_pdf_paths = word_to_pdf(alternative_path)
+                                pdf_document = fitz.open(temp_pdf_paths)
+                                continue
+
+                    
+                else:
+                    # Obter bytes da imagem do dicionário
+                    img_bytes = page_data["icon_bytes"]
+                    img = Image.open(io.BytesIO(img_bytes))
+                    pdf_document = fitz.open()
+                    temp_pdf_paths = image2pdf(img)
+                    pdf_document.insert_pdf(fitz.open(temp_pdf_paths))
+                    os.remove(temp_pdf_paths)
+
+
                 
                 # Obter a página desejada do documento original
                 page = pdf_document.load_page(original_page_number )  # Subtrai 1 porque os índices começam em 0
@@ -111,11 +156,18 @@ def save_file(self: Ui_Menu, sender):
                 new_pdf.insert_pdf(pdf_document, from_page=original_page_number, to_page=original_page_number)
 
                 pdf_document.close()
+                try:
+                    os.remove(temp_pdf_paths)
+                except:
+                    pass
+                
 
             new_pdf.save(save_path)
             new_pdf.close()
-
             QMessageBox.information(self, "Sucesso", "PDF salvo com sucesso!")
+
+
+
 
 def add_image_to_pdf(image_file, pdf_document):
     # Converte a imagem para um formato que pode ser inserido no documento PDF
@@ -154,16 +206,47 @@ def to_divide_file(self:Ui_Menu,sender):
                 original_file_path = page_data.get("local")  # Caminho do arquivo original
                 icon_bytes = page_data.get("icon_bytes")  # Bytes da imagem
 
-                if original_file_path and os.path.exists(original_file_path):
-                    # Se o arquivo original existe, carrega a página do arquivo
-                    pdf_document = fitz.open(original_file_path)
-                    page = pdf_document.load_page(int(page_data["n_pag_original"]) - 1)
-                elif icon_bytes:
-                    # Se o arquivo original não existe, mas existem bytes de imagem, cria uma nova página no PDF com a imagem
+                if os.path.exists(original_file_path):
+                     # Se não for um PDF, verificar outras extensões
+                    pdf_document = None
+                    for ext in [".pdf",".png", ".jpeg", ".xlsx", ".xls", ".docx", ".doc"]:
+                        alternative_path = os.path.splitext(original_file_path)[0] + ext
+                        if os.path.exists(alternative_path):
+
+                            if ext in (".pdf"):
+                                pdf_document = fitz.open(original_file_path)
+                                continue
+
+                            elif ext in (".png", ".jpeg"):
+                                img = Image.open(original_file_path)
+                                pdf_document = fitz.open()
+                                temp_pdf_paths = image2pdf(img)
+                                pdf_document = fitz.open(temp_pdf_paths)
+                                
+                                continue
+
+
+                            elif ext in ( ".xlsx", ".xls"):
+                                temp_pdf_paths = excel_to_pdf(alternative_path)
+                                pdf_document = fitz.open(temp_pdf_paths)
+                                continue
+                                
+                                
+
+                            elif ext in (".docx", ".doc"):
+                                temp_pdf_paths = word_to_pdf(alternative_path)
+                                pdf_document = fitz.open(temp_pdf_paths)
+                                continue
+
+                    
+                else:
+                    # Obter bytes da imagem do dicionário
+                    img_bytes = page_data["icon_bytes"]
+                    img = Image.open(io.BytesIO(img_bytes))
                     pdf_document = fitz.open()
-                    page = pdf_document.new_page(width=500, height=500)
-                    pix = fitz.Pixmap(io.BytesIO(icon_bytes))
-                    page.insert_image(page.rect, pixmap=pix)
+                    temp_pdf_paths = image2pdf(img)
+                    pdf_document = fitz.open(temp_pdf_paths)
+                    os.remove(temp_pdf_paths)
 
                 if page_number <= page_number_max:
                     # Adiciona a página ao novo documento PDF 01
@@ -173,6 +256,10 @@ def to_divide_file(self:Ui_Menu,sender):
                     new_pdf_02.insert_pdf(pdf_document, from_page=0, to_page=0)
 
                 pdf_document.close()
+                try:
+                    os.remove(temp_pdf_paths)
+                except:
+                    pass
 
             new_pdf_01.save(f'{base_name}_pag1_{page_number_max}.pdf')
             new_pdf_01.close()
@@ -186,13 +273,13 @@ def excel_file(self : Ui_Menu, file_path):
     with xw.App() as app:
         # user will not even see the excel opening up
         app.visible = False
-        book = app.books.open(file_path[0])
+        book = app.books.open(file_path)
         sheet = book.sheets[0]
         # sheet.page_setup.print_area = '$A$1:$Q$66'
         
         # Construct path for pdf file
         current_work_dir = os.getcwd()
-        pdf_file = os.path.join(os.path.dirname(file_path[0]), f"{os.path.splitext(os.path.basename(file_path[0]))[0]}.pdf")
+        pdf_file = os.path.join(os.path.dirname(file_path), f"{os.path.splitext(os.path.basename(file_path))[0]}.pdf")
         # pdf_file_name = "pdf_workbook_printout.pdf"
         pdf_path = Path(pdf_file)
 
@@ -203,8 +290,37 @@ def excel_file(self : Ui_Menu, file_path):
 
 
 def word_file(self: Ui_Menu , file_path):
-    pdf_file = os.path.join(os.path.dirname(file_path[0]), f"{os.path.splitext(os.path.basename(file_path[0]))[0]}.pdf")
-    convert(file_path[0] , pdf_file)
+    pdf_file = os.path.join(os.path.dirname(file_path), f"{os.path.splitext(os.path.basename(file_path))[0]}.pdf")
+    convert(file_path , pdf_file)
     return pdf_file
 
 
+def image2pdf(img):
+    pdf_path = "temp.pdf"
+    img.save(pdf_path, "PDF", resolution=100.0)
+    return pdf_path
+
+def excel_to_pdf(file_path):
+     with xw.App() as app:
+        # user will not even see the excel opening up
+        app.visible = False
+        book = app.books.open(file_path)
+        sheet = book.sheets[0]
+        # sheet.page_setup.print_area = '$A$1:$Q$66'
+        
+        # Construct path for pdf file
+        current_work_dir = os.getcwd()
+        pdf_file = os.path.join(os.path.dirname(file_path), f"{os.path.splitext(os.path.basename(file_path))[0]}.pdf")
+        # pdf_file_name = "pdf_workbook_printout.pdf"
+        pdf_path = Path(pdf_file)
+
+        # Save excel workbook as pdf and showing it
+        sheet.to_pdf(path=pdf_path, show=False)
+
+        return pdf_path
+     
+
+def word_to_pdf( file_path):
+    pdf_file = os.path.join(os.path.dirname(file_path), f"{os.path.splitext(os.path.basename(file_path))[0]}.pdf")
+    convert(file_path , pdf_file)
+    return pdf_file
