@@ -29,7 +29,7 @@ def add_pages(self:Ui_Menu, sender):
             excel_or_word = False
             file_dialog = QFileDialog()
             file_dialog.setFileMode(QFileDialog.ExistingFiles)
-            file_dialog.setNameFilter("All (*.pdf *.png *.jpeg *.xlsx *.xls *.docx , *.doc);;Arquivos PDF (*.pdf);;Imagens (*.png *.jpeg);;Excel (*.xlsx *.xls);; Word (*.docx , *.doc)")
+            file_dialog.setNameFilter("All (*.pdf *.png *.jpeg *.jpg *.xlsx *.xls *.docx , *.doc);;Arquivos PDF (*.pdf);;Imagens (*.png *.jpg *.jpeg);;Excel (*.xlsx *.xls);; Word (*.docx , *.doc)")
 
             file_dialog.setViewMode(QFileDialog.List)
 
@@ -60,7 +60,8 @@ def add_pages(self:Ui_Menu, sender):
                             "icon_bytes": img_bytes,  # Bytes do ícone para armazenar
                             "local":original_file_path,
                             "n_pag_original":page_num,
-                            "guidance": 0
+                            "guidance": 0,
+                            "watermark":None
                         }
                         self.icon_dict[len(self.icon_dict) + 1] = item_data
 
@@ -106,7 +107,7 @@ def save_file(self: Ui_Menu, sender):
                 if os.path.exists(original_file_path):
                      # Se não for um PDF, verificar outras extensões
                     pdf_document = None
-                    for ext in [".pdf",".png", ".jpeg", ".xlsx", ".xls", ".docx", ".doc"]:
+                    for ext in [".pdf",".png", ".jpeg" , "*.jpg", ".xlsx", ".xls", ".docx", ".doc"]:
                         alternative_path = os.path.splitext(original_file_path)[0] + ext
                         if os.path.exists(alternative_path):
 
@@ -114,7 +115,7 @@ def save_file(self: Ui_Menu, sender):
                                 pdf_document = fitz.open(original_file_path)
                                 continue
 
-                            elif ext in (".png", ".jpeg"):
+                            elif ext in (".png", ".jpeg", "*.jpg"):
                                 img = Image.open(original_file_path)
                                 pdf_document = fitz.open()
                                 temp_pdf_paths = image2pdf(img)
@@ -234,7 +235,7 @@ def to_divide_file(self:Ui_Menu,sender):
                 if os.path.exists(original_file_path):
                      # Se não for um PDF, verificar outras extensões
                     pdf_document = None
-                    for ext in [".pdf",".png", ".jpeg", ".xlsx", ".xls", ".docx", ".doc"]:
+                    for ext in [".pdf",".png", ".jpeg", "*.jpg", ".xlsx", ".xls", ".docx", ".doc"]:
                         alternative_path = os.path.splitext(original_file_path)[0] + ext
                         if os.path.exists(alternative_path):
 
@@ -242,7 +243,7 @@ def to_divide_file(self:Ui_Menu,sender):
                                 pdf_document = fitz.open(original_file_path)
                                 continue
 
-                            elif ext in (".png", ".jpeg"):
+                            elif ext in (".png", ".jpeg", "*.jpg"):
                                 img = Image.open(original_file_path)
                                 pdf_document = fitz.open()
                                 temp_pdf_paths = image2pdf(img)
@@ -399,4 +400,3 @@ def refresh_save(self:Ui_Menu,save_path):
 
     total_page = len(self.icon_dict)
     self.n_pg_total.setText(f'/ {total_page}')
-    print("PRONTO, é o arquivo novo ")

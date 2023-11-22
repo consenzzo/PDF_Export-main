@@ -49,7 +49,7 @@
         <string notr="true">background-color: rgb(0, 142, 255); color: rgb(255, 255, 255); font: 700 14pt &quot;Yu Gothic UI&quot;;</string>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="page">
         <property name="geometry">
@@ -148,7 +148,10 @@
                <string>Adicionar Documentos</string>
               </property>
               <property name="checkable">
-               <bool>true</bool>
+               <bool>false</bool>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
               </property>
              </widget>
             </item>
@@ -182,7 +185,7 @@
                <string>Adicionar Marca D'água</string>
               </property>
               <property name="checkable">
-               <bool>true</bool>
+               <bool>false</bool>
               </property>
              </widget>
             </item>
@@ -216,7 +219,7 @@
                <string>Adicionar Nº de Página</string>
               </property>
               <property name="checkable">
-               <bool>true</bool>
+               <bool>false</bool>
               </property>
              </widget>
             </item>
@@ -250,7 +253,7 @@
                <string>Remover Páginas</string>
               </property>
               <property name="checkable">
-               <bool>true</bool>
+               <bool>false</bool>
               </property>
              </widget>
             </item>
@@ -459,7 +462,7 @@
              <string notr="true">QCommandLinkButton {font: 11pt &quot;Segoe UI&quot;; } QCommandLinkButton:checked {background-color: rgb(0, 166, 237);color: white; }</string>
             </property>
             <property name="text">
-             <string>Converter para  JPEG</string>
+             <string>Converter para  JPG</string>
             </property>
             <property name="checkable">
              <bool>true</bool>

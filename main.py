@@ -10,6 +10,7 @@ from dialog import add_pages, save_file, to_divide_file
 from display import display_image, next_page, back_page, go_to_page, on_dropped, move_page_up , move_page_down, close_file, zoom_in, zoom_out, zoom_slider_changed
 from edit_file import delete_selected_page, rotate_image_r, rotate_image_l
 from zip_file import zip_file
+from marca_dagua import add_watermark
 
 
 class MyWidget(QWidget, Ui_Menu):
@@ -52,7 +53,8 @@ class MyWidget(QWidget, Ui_Menu):
         self.horizontalSlider.valueChanged.connect(lambda value, sender="horizontalSlider": zoom_slider_changed(self, value, sender))
         self.to_divide_file.clicked.connect(lambda: to_divide_file(self,"to_divide_file"))
         self.zip_file.clicked.connect(lambda: zip_file(self,"zip_file"))
-
+        self.add_new_file.clicked.connect(lambda: add_pages(self, "add_new_file"))
+        self.add_m_d_agua.clicked.connect(lambda: add_watermark(self, "add_m_d_agua"))
 
 
 if __name__ == '__main__':

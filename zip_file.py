@@ -34,7 +34,7 @@ def zip_file(self: Ui_Menu, sender):
                 if os.path.exists(original_file_path):
                     # Se não for um PDF, verificar outras extensões
                     pdf_document = None
-                    for ext in [".pdf", ".png", ".jpeg", ".xlsx", ".xls", ".docx", ".doc"]:
+                    for ext in [".pdf", ".png", ".jpeg", "*.jpg", ".xlsx", ".xls", ".docx", ".doc"]:
                         alternative_path = os.path.splitext(original_file_path)[0] + ext
                         if os.path.exists(alternative_path):
 
@@ -42,7 +42,7 @@ def zip_file(self: Ui_Menu, sender):
                                 pdf_document = fitz.open(original_file_path)
                                 continue
 
-                            elif ext in (".png", ".jpeg"):
+                            elif ext in (".png", ".jpeg", "*.jpg"):
                                 img = Image.open(original_file_path)
                                 pdf_document = fitz.open()
                                 temp_pdf_paths = image2pdf(img)

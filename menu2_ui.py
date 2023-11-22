@@ -73,7 +73,8 @@ class Ui_Menu(object):
         self.add_new_file.setMaximumSize(QSize(16777215, 50))
         self.add_new_file.setCursor(QCursor(Qt.PointingHandCursor))
         self.add_new_file.setStyleSheet(u"QCommandLinkButton {font: 11pt \"Segoe UI\"; } QCommandLinkButton:checked {background-color: rgb(0, 166, 237);color: white; }")
-        self.add_new_file.setCheckable(True)
+        self.add_new_file.setCheckable(False)
+        self.add_new_file.setChecked(False)
 
         self.verticalLayout_2.addWidget(self.add_new_file)
 
@@ -85,7 +86,7 @@ class Ui_Menu(object):
         self.add_m_d_agua.setMaximumSize(QSize(16777215, 50))
         self.add_m_d_agua.setCursor(QCursor(Qt.PointingHandCursor))
         self.add_m_d_agua.setStyleSheet(u"QCommandLinkButton {font: 11pt \"Segoe UI\"; } QCommandLinkButton:checked {background-color: rgb(0, 166, 237);color: white; }")
-        self.add_m_d_agua.setCheckable(True)
+        self.add_m_d_agua.setCheckable(False)
 
         self.verticalLayout_2.addWidget(self.add_m_d_agua)
 
@@ -97,7 +98,7 @@ class Ui_Menu(object):
         self.add_n_pg.setMaximumSize(QSize(16777215, 50))
         self.add_n_pg.setCursor(QCursor(Qt.PointingHandCursor))
         self.add_n_pg.setStyleSheet(u"QCommandLinkButton {font: 11pt \"Segoe UI\"; } QCommandLinkButton:checked {background-color: rgb(0, 166, 237);color: white; }")
-        self.add_n_pg.setCheckable(True)
+        self.add_n_pg.setCheckable(False)
 
         self.verticalLayout_2.addWidget(self.add_n_pg)
 
@@ -109,7 +110,7 @@ class Ui_Menu(object):
         self.delete_page_menu.setMaximumSize(QSize(16777215, 50))
         self.delete_page_menu.setCursor(QCursor(Qt.PointingHandCursor))
         self.delete_page_menu.setStyleSheet(u"QCommandLinkButton {font: 11pt \"Segoe UI\"; } QCommandLinkButton:checked {background-color: rgb(0, 166, 237);color: white; }")
-        self.delete_page_menu.setCheckable(True)
+        self.delete_page_menu.setCheckable(False)
 
         self.verticalLayout_2.addWidget(self.delete_page_menu)
 

@@ -87,6 +87,16 @@ dict_validate = {
         "module": "zip_file",
         "function":"zip_file",
     },
+    "add_new_file" : {
+        "check" : None,
+        "module": "dialog",
+        "function":"add_pages",
+    },
+    "add_m_d_agua" : {
+        "check" : "count_row_listWidget",
+        "module": "marca_dagua",
+        "function":"add_watermark",
+    },
 
     
 }
