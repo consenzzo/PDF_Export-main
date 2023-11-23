@@ -6,6 +6,7 @@ import check
 from dict_validate import dict_validate
 from icon_button import icon_button
 import base64
+import os
 
 
 def display_image(self:Ui_Menu, sender):
@@ -34,7 +35,56 @@ def display_image(self:Ui_Menu, sender):
                         self.scrollAreaWidgetContents.setMinimumSize(QSize(pixmap.size()))
                         return
 
-                    
+def load_pages(self, files:list):
+    for file_path in files:
+        original_file_path = file_path
+        if file_path.lower().endswith(('.xlsx', '.xls')):
+            file_excel =  excel_file(self, file_path)
+            file_path = file_excel
+            excel_or_word = True
+        elif file_path.lower().endswith(('.docx' , '.doc')):
+            file_word =  word_file(self, file_path)
+            file_path = file_word
+            excel_or_word = True
+
+        pdf_document = fitz.open(file_path)
+
+        for page_num in range(pdf_document.page_count):
+            page = pdf_document.load_page(page_num)
+            img_bytes = page.get_pixmap()
+            img_bytes = img_bytes.tobytes()
+            
+
+            item_data = {
+                "atual": str(len(self.icon_dict) + 1),
+                "icon_bytes": img_bytes,  # Bytes do ícone para armazenar
+                "local":original_file_path,
+                "n_pag_original":page_num,
+                "guidance": 0,
+                "watermark":None,
+                "watermark_bytes":None,
+                "watermark_transparence":None,
+            }
+            self.icon_dict[len(self.icon_dict) + 1] = item_data
+
+            pixmap = QPixmap()
+            pixmap.loadFromData(img_bytes)
+
+            list_item = QListWidgetItem()
+            pixmap = pixmap.scaledToHeight(200, Qt.SmoothTransformation)
+            list_item.setIcon(QIcon(pixmap))
+            list_item.setSizeHint(QSize(pixmap.size()))  # Defina o tamanho desejado
+            self.listWidget.addItem(list_item)
+                                
+
+        pdf_document.close()
+        if excel_or_word == True:
+            os.remove(file_path)
+        excel_or_word = False
+
+    total_page = len(self.icon_dict)
+    self.n_pg_total.setText(f'/ {total_page}')
+
 
 def next_page(self:Ui_Menu, sender):
     function_name = None

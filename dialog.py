@@ -16,6 +16,7 @@ from PIL import Image
 from openpyxl import load_workbook
 from icon_button import icon_button
 import base64
+from display import load_pages
 
 
 def add_pages(self:Ui_Menu, sender):
@@ -32,56 +33,60 @@ def add_pages(self:Ui_Menu, sender):
             file_dialog.setNameFilter("All (*.pdf *.png *.jpeg *.jpg *.xlsx *.xls *.docx , *.doc);;Arquivos PDF (*.pdf);;Imagens (*.png *.jpg *.jpeg);;Excel (*.xlsx *.xls);; Word (*.docx , *.doc)")
 
             file_dialog.setViewMode(QFileDialog.List)
-
+            file_paths = file_dialog.selectedFiles()
             if file_dialog.exec():
-                file_paths = file_dialog.selectedFiles()
+                load_pages(file_paths)
 
-                for file_path in file_paths:
-                    original_file_path = file_path
-                    if file_path.lower().endswith(('.xlsx', '.xls')):
-                        file_excel =  excel_file(self, file_path)
-                        file_path = file_excel
-                        excel_or_word = True
-                    elif file_path.lower().endswith(('.docx' , '.doc')):
-                        file_word =  word_file(self, file_path)
-                        file_path = file_word
-                        excel_or_word = True
 
-                    pdf_document = fitz.open(file_path)
 
-                    for page_num in range(pdf_document.page_count):
-                        page = pdf_document.load_page(page_num)
-                        img_bytes = page.get_pixmap()
-                        img_bytes = img_bytes.tobytes()
+                # for file_path in file_paths:
+                #     original_file_path = file_path
+                #     if file_path.lower().endswith(('.xlsx', '.xls')):
+                #         file_excel =  excel_file(self, file_path)
+                #         file_path = file_excel
+                #         excel_or_word = True
+                #     elif file_path.lower().endswith(('.docx' , '.doc')):
+                #         file_word =  word_file(self, file_path)
+                #         file_path = file_word
+                #         excel_or_word = True
+
+                #     pdf_document = fitz.open(file_path)
+
+                #     for page_num in range(pdf_document.page_count):
+                #         page = pdf_document.load_page(page_num)
+                #         img_bytes = page.get_pixmap()
+                #         img_bytes = img_bytes.tobytes()
                         
 
-                        item_data = {
-                            "atual": str(len(self.icon_dict) + 1),
-                            "icon_bytes": img_bytes,  # Bytes do ícone para armazenar
-                            "local":original_file_path,
-                            "n_pag_original":page_num,
-                            "guidance": 0,
-                            "watermark":None
-                        }
-                        self.icon_dict[len(self.icon_dict) + 1] = item_data
+                #         item_data = {
+                #             "atual": str(len(self.icon_dict) + 1),
+                #             "icon_bytes": img_bytes,  # Bytes do ícone para armazenar
+                #             "local":original_file_path,
+                #             "n_pag_original":page_num,
+                #             "guidance": 0,
+                #             "watermark":None,
+                #             "watermark_bytes":None,
+                #             "watermark_transparence":None,
+                #         }
+                #         self.icon_dict[len(self.icon_dict) + 1] = item_data
 
-                        pixmap = QPixmap()
-                        pixmap.loadFromData(img_bytes)
+                #         pixmap = QPixmap()
+                #         pixmap.loadFromData(img_bytes)
 
-                        list_item = QListWidgetItem()
-                        pixmap = pixmap.scaledToHeight(200, Qt.SmoothTransformation)
-                        list_item.setIcon(QIcon(pixmap))
-                        list_item.setSizeHint(QSize(pixmap.size()))  # Defina o tamanho desejado
-                        self.listWidget.addItem(list_item)
+                #         list_item = QListWidgetItem()
+                #         pixmap = pixmap.scaledToHeight(200, Qt.SmoothTransformation)
+                #         list_item.setIcon(QIcon(pixmap))
+                #         list_item.setSizeHint(QSize(pixmap.size()))  # Defina o tamanho desejado
+                #         self.listWidget.addItem(list_item)
                                            
 
-                    pdf_document.close()
-                    if excel_or_word == True:
-                        os.remove(file_path)
-                    excel_or_word = False
+                #     pdf_document.close()
+                #     if excel_or_word == True:
+                #         os.remove(file_path)
+                #     excel_or_word = False
 
-                total_page = len(self.icon_dict)
-                self.n_pg_total.setText(f'/ {total_page}')
+                # total_page = len(self.icon_dict)
+                # self.n_pg_total.setText(f'/ {total_page}')
 
 
 def save_file(self: Ui_Menu, sender):
@@ -113,7 +118,7 @@ def save_file(self: Ui_Menu, sender):
 
                             if ext in (".pdf"):
                                 pdf_document = fitz.open(original_file_path)
-                                continue
+                                break
 
                             elif ext in (".png", ".jpeg", "*.jpg"):
                                 img = Image.open(original_file_path)
@@ -121,20 +126,20 @@ def save_file(self: Ui_Menu, sender):
                                 temp_pdf_paths = image2pdf(img)
                                 pdf_document.insert_pdf(fitz.open(temp_pdf_paths))
                                 os.remove(temp_pdf_paths)
-                                continue
+                                break
 
 
                             elif ext in ( ".xlsx", ".xls"):
                                 temp_pdf_paths = excel_to_pdf(alternative_path)
                                 pdf_document = fitz.open(temp_pdf_paths)
-                                continue
+                                break
                                 
                                 
 
                             elif ext in (".docx", ".doc"):
                                 temp_pdf_paths = word_to_pdf(alternative_path)
                                 pdf_document = fitz.open(temp_pdf_paths)
-                                continue
+                                break
 
                     
                 else:
@@ -149,11 +154,32 @@ def save_file(self: Ui_Menu, sender):
 
                 
                 # Obter a página desejada do documento original
-                page = pdf_document.load_page(original_page_number )  # Subtrai 1 porque os índices começam em 0
+                page = pdf_document.load_page(original_page_number )
                 
                 if position != 0:
                     # Rotacionar a página
                     page.set_rotation(position)
+
+                watermark_path = page_data.get("watermark")
+                if watermark_path:
+                    if os.path.exists(watermark_path):
+                        watermark_bytes = page_data.get("watermark_bytes")
+                        # Adicionar a marca d'água ao PDF
+                        if watermark_bytes:
+                            watermark_img = Image.open(io.BytesIO(watermark_bytes))
+                            watermark_pdf = fitz.open()
+                            watermark_pdf.insert_pdf(fitz.open(image2pdf(watermark_img)))
+                        else:
+                            # Se não houver bytes da marca d'água, pode ser uma imagem externa
+                            watermark_pdf = fitz.open(watermark_path)
+
+                        pdf_document = apply_watermark_to_save(page, watermark_pdf, page_data.get("watermark_transparence"))
+
+                #         # Copiar a página original para o novo documento
+                # new_pdf.insert_pdf(pdf_document, from_page=original_page_number)
+
+                # # Fechar o documento de marca d'água
+                # watermark_pdf.close()
 
                 # Copiar a página original para o novo documento
                 new_pdf.insert_pdf(pdf_document, from_page=original_page_number, to_page=original_page_number)
@@ -190,6 +216,36 @@ def save_file(self: Ui_Menu, sender):
                             label.setPixmap(pixmap)
                             self.n_pg_edit.setText("")
             refresh_save(self,save_path)
+
+def apply_watermark_to_save(pdf_page, watermark_path, transparency=0.5):
+    # Abrir o documento da marca d'água
+    watermark_document = fitz.open(watermark_path)
+
+    # Se o documento da marca d'água contiver apenas uma página, use-a diretamente
+    if watermark_document.page_count == 1:
+        watermark_page = watermark_document[0]
+    else:
+        # Se houver várias páginas, crie uma nova página única mesclando todas elas
+        watermark_page = watermark_document.new_page(width=pdf_page.rect.width, height=pdf_page.rect.height)
+        for page_num in range(watermark_document.page_count):
+            page = watermark_document.load_page(page_num)
+            # Desenhar o conteúdo da página no contexto da nova página
+            watermark_page.insert_image((0, 0, watermark_page.rect.width, watermark_page.rect.height), pixmap=page.get_pixmap())
+
+    # Criar uma nova página para mesclar a página original e a marca d'água
+    new_page = pdf_page.duplicate()
+
+    # Configurar a transparência da marca d'água
+    new_page.set_opacity(transparency)
+
+    # Desenhar o conteúdo da marca d'água na nova página
+    new_page.insert_image((0, 0, new_page.rect.width, new_page.rect.height), pixmap=watermark_page.get_pixmap())
+
+    # Fechar o documento da marca d'água
+    watermark_document.close()
+
+    return new_page
+
 
 
 

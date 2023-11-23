@@ -68,7 +68,37 @@ from display import display_image
 #     updated_icon_bytes = output_buffer.getvalue()
 
 #     return updated_icon_bytes
-def apply_watermark_to_icon(icon_bytes, watermark_path):
+# def apply_watermark_to_icon(icon_bytes, watermark_path):
+#     # Carregar a imagem do ícone a partir dos bytes
+#     icon_image = Image.open(io.BytesIO(icon_bytes)).convert("RGBA")
+
+#     # Carregar a imagem da marca d'água
+#     watermark_image = Image.open(watermark_path).convert("RGBA")
+
+#     # Criar uma nova imagem para a marca d'água com a mesma dimensão do ícone e transparência de 50%
+#     watermark_image_with_transparency = watermark_image.copy()
+#     watermark_image_with_transparency.putalpha(128)  # 128 é 50% de opacidade (0 é completamente transparente, 255 é completamente opaco)
+
+#     # Criar uma nova imagem para a marca d'água com a mesma dimensão do ícone
+#     watermark_composite = Image.new("RGBA", icon_image.size, (0, 0, 0, 0))
+
+#     # Calcular a posição para centralizar a marca d'água
+#     x_offset = (icon_image.width - watermark_image.width) // 2
+#     y_offset = (icon_image.height - watermark_image.height) // 2
+
+#     # Colocar a marca d'água na posição calculada
+#     watermark_composite.paste(watermark_image_with_transparency, (x_offset, y_offset), watermark_image_with_transparency)
+
+#     # Combinar as duas imagens considerando a transparência
+#     result_image = Image.alpha_composite(icon_image, watermark_composite)
+
+#     # Salvar a imagem resultante de volta nos bytes
+#     output_buffer = io.BytesIO()
+#     result_image.save(output_buffer, format="PNG")
+#     updated_icon_bytes = output_buffer.getvalue()
+
+#     return updated_icon_bytes
+def apply_watermark_to_icon(icon_bytes, watermark_path, transparency=0.5):
     # Carregar a imagem do ícone a partir dos bytes
     icon_image = Image.open(io.BytesIO(icon_bytes)).convert("RGBA")
 
@@ -77,7 +107,8 @@ def apply_watermark_to_icon(icon_bytes, watermark_path):
 
     # Criar uma nova imagem para a marca d'água com a mesma dimensão do ícone e transparência de 50%
     watermark_image_with_transparency = watermark_image.copy()
-    watermark_image_with_transparency.putalpha(128)  # 128 é 50% de opacidade (0 é completamente transparente, 255 é completamente opaco)
+    watermark_image_with_transparency.putalpha(int(255 * transparency))  # Ajustar a transparência
+
 
     # Criar uma nova imagem para a marca d'água com a mesma dimensão do ícone
     watermark_composite = Image.new("RGBA", icon_image.size, (0, 0, 0, 0))
@@ -97,7 +128,12 @@ def apply_watermark_to_icon(icon_bytes, watermark_path):
     result_image.save(output_buffer, format="PNG")
     updated_icon_bytes = output_buffer.getvalue()
 
-    return updated_icon_bytes
+    # Adicionar os bytes da imagem da marca d'água à chave "watermark_bytes"
+    watermark_buffer = io.BytesIO()
+    watermark_image.save(watermark_buffer, format="PNG")
+    watermark_bytes = watermark_buffer.getvalue()
+
+    return updated_icon_bytes, watermark_bytes , transparency
 
 
 def update_icon_in_list(widget_item, icon_bytes):
@@ -115,6 +151,7 @@ def add_watermark(self: Ui_Menu, sender):
         check_function = function_name(self)
 
     if dict_validate[sender]["check"] is None or check_function:
+        
         # Abrir um diálogo para selecionar a imagem da marca d'água
         watermark_path, _ = QFileDialog.getOpenFileName(self, "Selecionar Imagem de Marca d'Água", "", "Imagens (*.png *.jpg *.jpeg)")
 
@@ -123,7 +160,10 @@ def add_watermark(self: Ui_Menu, sender):
             item_data["watermark"] = watermark_path
 
             # # Atualizar os bytes do ícone com a marca d'água
-            item_data["icon_bytes"] = apply_watermark_to_icon(item_data["icon_bytes"], watermark_path)
+            # item_data["icon_bytes"] = apply_watermark_to_icon(item_data["icon_bytes"], watermark_path)
+
+            item_data["icon_bytes"], item_data["watermark_bytes"],item_data["watermark_transparence"] = apply_watermark_to_icon(item_data["icon_bytes"], watermark_path)
+
 
             # Atualizar os bytes do ícone com a marca d'água e opacidade de 50%
             # item_data["icon_bytes"] = apply_watermark_to_icon(item_data["icon_bytes"], watermark_path, tra=0.5)
