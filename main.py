@@ -6,6 +6,7 @@ from PySide6.QtGui import QPixmap, QIcon, QMouseEvent
 from icon_button import icon_button
 from add_file import add_pages
 from display import display_image
+from edit_file import delete_selected_page
 
 
 
@@ -34,7 +35,7 @@ class MyWidget(QWidget, Ui_Menu):
 
         self.add_pg.clicked.connect(lambda: add_pages(self))
         self.listWidget.currentRowChanged.connect(lambda: display_image(self))
-        # self.delete_pg.clicked.connect(lambda: delete_selected_page(self,"delete_pg"))
+        self.delete_pg.clicked.connect(lambda: delete_selected_page(self))
         # self.next_pg.clicked.connect(lambda: next_page(self,"next_pg"))
         # self.back_pg.clicked.connect(lambda: back_page(self,"back_pg"))
         # self.n_pg_edit.editingFinished.connect(lambda: go_to_page(self,"n_pg_edit"))
