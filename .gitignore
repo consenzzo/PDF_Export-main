@@ -9,6 +9,7 @@ __pycache__
 .Bkp
 /Bkp
 *teste.py
+*PDF_Export.xlsx
 
 # Backup files #
 *.bak

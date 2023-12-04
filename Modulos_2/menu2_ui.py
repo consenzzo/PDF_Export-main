@@ -720,7 +720,7 @@ class Ui_Menu(object):
 
         self.retranslateUi(Menu)
 
-        self.toolBox.setCurrentIndex(1)
+        self.toolBox.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(Menu)
@@ -737,7 +737,7 @@ class Ui_Menu(object):
         self.pdf_to_word.setText(QCoreApplication.translate("Menu", u"Converter para  Word", None))
         self.pdf_to_excel.setText(QCoreApplication.translate("Menu", u"Converter para  Excel", None))
         self.expo_Img_Button_png.setText(QCoreApplication.translate("Menu", u"Converter para PNG", None))
-        self.expo_Img_Button_jpg.setText(QCoreApplication.translate("Menu", u"Converter para  JPG", None))
+        self.expo_Img_Button_jpg.setText(QCoreApplication.translate("Menu", u"Converter para  JPEG", None))
         self.word_to_pdf.setText(QCoreApplication.translate("Menu", u"Converter para PDF", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_2), QCoreApplication.translate("Menu", u"Converter Arquivo", None))
         self.add_password.setText(QCoreApplication.translate("Menu", u"Proteger PDF", None))
