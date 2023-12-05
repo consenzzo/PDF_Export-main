@@ -89,7 +89,8 @@ def add_page_dict(self:Ui_Menu, pdf):
         }
         self.icon_dict[len(self.icon_dict) + 1] = item_data
 
-        pixmap = render_img_byte(self,img_bytes)
+        pixmap_list = render_img_byte(self,img_bytes)
+        self.listWidget.addItem(pixmap_list)
                         
 
     pdf_document.close()

@@ -11,7 +11,8 @@ def render_img_byte(self:Ui_Menu,img_bytes):
     pixmap = pixmap.scaledToHeight(200, Qt.SmoothTransformation)
     list_item.setIcon(QIcon(pixmap))
     list_item.setSizeHint(QSize(pixmap.size()))  # Defina o tamanho desejado
-    self.listWidget.addItem(list_item)
+    return list_item
+    
 
 
 

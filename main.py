@@ -6,8 +6,8 @@ from PySide6.QtGui import QPixmap, QIcon, QMouseEvent
 from icon_button import icon_button
 from add_file import add_pages
 from display import display_image
-from edit_file import delete_selected_page
-
+from edit_file import delete_selected_page, rotate_image_r, rotate_image_l
+from navigation import next_page, back_page, go_to_page, zoom_in, zoom_out, zoom_slider_changed
 
 
 
@@ -36,19 +36,19 @@ class MyWidget(QWidget, Ui_Menu):
         self.add_pg.clicked.connect(lambda: add_pages(self))
         self.listWidget.currentRowChanged.connect(lambda: display_image(self))
         self.delete_pg.clicked.connect(lambda: delete_selected_page(self))
-        # self.next_pg.clicked.connect(lambda: next_page(self,"next_pg"))
-        # self.back_pg.clicked.connect(lambda: back_page(self,"back_pg"))
-        # self.n_pg_edit.editingFinished.connect(lambda: go_to_page(self,"n_pg_edit"))
+        self.next_pg.clicked.connect(lambda: next_page(self))
+        self.back_pg.clicked.connect(lambda: back_page(self))
+        self.n_pg_edit.editingFinished.connect(lambda: go_to_page(self))
         # self.up_pg.clicked.connect(lambda: move_page_up(self))
         # self.down_pg.clicked.connect(lambda: move_page_down(self))
         # self.listWidget.dropped.connect(lambda initial, final: on_dropped(self, initial, final))
         # self.save_file.clicked.connect(lambda: save_file(self,"save_file"))
         # self.close_file.clicked.connect(lambda: close_file(self,"close_file"))
-        # self.rotate_rigth.clicked.connect(lambda: rotate_image_r(self,"rotate_rigth"))
-        # self.rotate_left.clicked.connect(lambda: rotate_image_l(self,"rotate_left"))
-        # self.zoom_in.clicked.connect(lambda: zoom_in(self,"zoom_in"))
-        # self.zoom_out.clicked.connect(lambda: zoom_out(self,"zoom_out"))
-        # self.horizontalSlider.valueChanged.connect(lambda value, sender="horizontalSlider": zoom_slider_changed(self, value, sender))
+        self.rotate_rigth.clicked.connect(lambda: rotate_image_r(self))
+        self.rotate_left.clicked.connect(lambda: rotate_image_l(self))
+        self.zoom_in.clicked.connect(lambda: zoom_in(self))
+        self.zoom_out.clicked.connect(lambda: zoom_out(self))
+        self.horizontalSlider.valueChanged.connect(lambda value : zoom_slider_changed(self, value))
         # self.to_divide_file.clicked.connect(lambda: to_divide_file(self,"to_divide_file"))
         # self.zip_file.clicked.connect(lambda: zip_file(self,"zip_file"))
         # self.add_new_file.clicked.connect(lambda: add_pages(self, "add_new_file"))
