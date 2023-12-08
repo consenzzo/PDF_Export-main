@@ -1,13 +1,24 @@
 from menu2_ui import Ui_Menu
-from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QMessageBox, QListWidgetItem
 from PySide6.QtGui import QPixmap, QIcon, QTransform
-from PySide6.QtCore import QByteArray, QBuffer, QIODevice, QSize, Qt
+from PySide6.QtCore import QByteArray, QBuffer, QIODevice, QSize, Qt, Slot
 import base64
 from icon_button import icon_button
-from convert import base64_to_pdf, pdf_to_base64
+from convert import base64_to_pdf, pdf_to_base64, img_to_pdf, scale_image
 import fitz  # PyMuPDF
 import os
-from display import render_img_byte, display_image
+from display import  display_image
+from dialog import search_watermark
+from pathlib import Path
+from typing import Union, Literal, List
+from decimal import Decimal
+from PIL import Image, ImageEnhance
+import math
+from pdf2image import convert_from_path
+from reportlab.pdfgen import canvas
+from PyPDF2 import PdfMerger, PdfReader, PdfWriter
+from reportlab.lib.colors import Color  # Adicionado para lidar com cores e transparência
+
 
 def delete_selected_page(self:Ui_Menu):
     selected_row = self.listWidget.currentRow()
@@ -107,41 +118,316 @@ def rotate_img(self:Ui_Menu, degrees):
             display_image(self)
 
 
+def move_page_up(self:Ui_Menu):
+    initial_position = self.listWidget.currentRow()
+    if initial_position == 0:
+        pass
+    else:
+        initial_position += 1
+        final_position = initial_position - 1
+        move_page(self, initial_position, final_position)
 
 
 
-    # pixmap = self.display.pixmap()
-    # if not pixmap.isNull():
-    #     image = pixmap.toImage()
-    #     rotated_image = image.transformed(QTransform().rotate(90))
-    #     self.display.setPixmap(QPixmap.fromImage(rotated_image))
-    # current_item = self.listWidget.currentItem()
-    # if current_item:
-    #     current_icon = current_item.icon()
-    #     # pixmap = current_icon.pixmap(current_item.icon())
-    #     rotated_pixmap = QPixmap(pixmap.transformed(QTransform().rotate(90)))
-    #     rotated_icon = QIcon(rotated_pixmap)
-    #     current_item.setIcon(rotated_icon)
-    #     byte_array = QByteArray()
-    #     buffer = QBuffer(byte_array)
-    #     buffer.open(QIODevice.WriteOnly)
-    #     rotated_image.save(buffer, "PNG")  # Substitua "PNG" pelo formato desejado
-    #     buffer.close()
-    #     byte_array = byte_array.data()
-        
-        
+def move_page_down(self:Ui_Menu):
+    initial_position = self.listWidget.currentRow()
+    if initial_position == self.listWidget.count() - 1:
+        pass
+    else:
+        initial_position += 1
+        final_position = initial_position + 1
+        move_page(self, initial_position, final_position)
+
+
+
+def move_page(self:Ui_Menu, initial_position, final_position):
+
+    if initial_position != final_position:
+        for page, data in self.icon_dict.items():
+            current_position = int(data["atual"])
+
+            if current_position == initial_position:
+                data["atual"] = str(final_position)
+            elif initial_position < final_position:
+                if initial_position < current_position <= final_position:
+                    data["atual"] = str(current_position - 1)
+            else:
+                if final_position <= current_position < initial_position:
+                    data["atual"] = str(current_position + 1)
+
+        sort_list_widget(self, final_position)
+
+def sort_list_widget(self:Ui_Menu, final_position):
+    # Limpe a listWidget
+    self.listWidget.setCurrentRow(-1)
+    self.listWidget.clear()
     
-    # page_rotate = self.listWidget.currentRow() + 1
-    # rotate = self.icon_dict[page_rotate]["guidance"]
-    # self.icon_dict[page_rotate]["icon_bytes"] = byte_array
-    # rotate += 90
-    # if rotate == 360:
-    #     self.icon_dict[page_rotate]["rotate"] = 0
-    # else:
-    #     self.icon_dict[page_rotate]["rotate"] = rotate
-    
+    new_dict = dict(sorted(self.icon_dict.items(), key=lambda x: x[1]['atual']))
+
+    for page, data in new_dict.items():
+        pixmap = QPixmap()
+        pixmap.loadFromData(data["icon_bytes"])
+        list_item = QListWidgetItem()
+        pixmap = pixmap.scaledToHeight(200, Qt.SmoothTransformation)
+        list_item.setIcon(QIcon(pixmap))
+        list_item.setSizeHint(QSize(pixmap.size()))  # Defina o tamanho desejado
+        self.listWidget.addItem(list_item)
+    self.listWidget.setCurrentRow(final_position-1)
+
+@Slot(int, int)
+def on_dropped(self:Ui_Menu, initial, final):
+    # print(f"Item da linha {initial} foi arrastado para linha {final}")
+    move_page(self, initial, final)
+
+
+
+def add_watermark(self: Ui_Menu):
+
+    watermark_path = search_watermark(self)
+
+    for item_data in self.icon_dict.values():
+        base64_pdf = item_data["base64_pdf"]
+        local_pdf = base64_to_pdf(base64_pdf,watermark_path)
+        pdf_document = fitz.open(local_pdf)
+        page_pdf = pdf_document[0]
+        current_width_pt, current_height_pt = page_pdf.rect.width, page_pdf.rect.height
+        pdf_document.close()
+        size_watermark = scale_image(self, watermark_path, current_width_pt, current_height_pt)
+        if size_watermark:
+            watermark_path = size_watermark
+        watermark_path = remover_fundo_branco(watermark_path,watermark_path)
+        watermark_pdf = create_watermark_pdf(watermark_path)
+        base64_watermark = pdf_to_base64(watermark_pdf,0)
+        item_data["watermark_base64_pdf"] = base64_watermark
+        # os.remove(local_img_pdf)
+        watermark(local_pdf,watermark_pdf,'pdf_opacity_temp.pdf','ALL')
+
+def create_watermark_pdf(watermark_image_path):
+    # Criar diretório temporário se não existir
+    # temp_directory = 'temp'
+    # os.makedirs(temp_directory, exist_ok=True)
+
+    # Criar PDF da marca d'água
+    watermark_pdf_path = os.path.join(os.path.dirname(watermark_image_path), f"{os.path.splitext(os.path.basename(watermark_image_path))[0]}_WATERMARK_.pdf")
+    c = canvas.Canvas(watermark_pdf_path)
+
+    # Definir o valor alfa para transparência (0 é totalmente transparente, 1 é totalmente opaco)
+    valor_alfa = 0.5  # Ajuste esse valor conforme necessário
+    branco_transparente = Color(1, 1, 1, alpha=valor_alfa)
+
+    # Desenhar a imagem com transparência
+    c.setFillColor(branco_transparente)
+    c.drawImage(watermark_image_path, 170, 300, 250, 250, mask='auto')
+
+    c.save()
+
+    return watermark_pdf_path
+
+# def watermark_pdfs(input_directory, output_directory, watermark_image_path):
+#     # Criar PDF da marca d'água
+#     watermark_pdf_path = create_watermark_pdf(watermark_image_path)
+#     watermark_pdf = PdfReader(open(watermark_pdf_path, "rb"))
+#     watermark_page = watermark_pdf.pages[0]
+
+#     # Criar diretório de saída se não existir
+#     os.makedirs(output_directory, exist_ok=True)
+
+#     # Processar cada arquivo PDF no diretório de entrada
+#     for filename in os.listdir(input_directory):
+#         if filename.endswith(".pdf"):
+#             input_file = os.path.join(input_directory, filename)
+#             output_file = os.path.join(output_directory, filename)
+
+#             with open(input_file, 'rb') as f:
+#                 pdf_reader = PdfReader(f)
+#                 number_of_pages = len(pdf_reader.pages)
+#                 output = PdfWriter()
+
+#                 for x in range(number_of_pages):
+#                     page_temp = pdf_reader.pages[x]
+#                     page_temp.merge_page(watermark_page)
+#                     output.add_page(page_temp)
+#                     print(f"{x} Páginas de {number_of_pages} do Arquivo: {filename}")
+
+#                 with open(output_file, "wb") as merged_file:
+#                     output.write(merged_file)
+#             print(f"Arquivo Marcado d'água: {filename}")
+
+
+# if __name__ == "__main__":
+#     input_directory = r"C:\Users\gusta\OneDrive\Área de Trabalho\Nova pasta\in"  # Alterar para o seu diretório de entrada
+#     output_directory = r"C:\Users\gusta\OneDrive\Área de Trabalho\Nova pasta\out"  # Alterar para o seu diretório de saída
+#     watermark_image_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\marca dagua_transp.jpg" # Alterar para o caminho da sua imagem de marca d'água
+
+#     watermark_pdfs(input_directory, output_directory, watermark_image_path)
+
+
+        
+def watermark(
+    content_pdf: Path,
+    stamp_pdf: Path,
+    pdf_result: Path,
+    page_indices: Union[Literal["ALL"], List[int]] = "ALL",
+):
+    reader = PdfReader(content_pdf)
+    reader_stamp = PdfReader(stamp_pdf)
+    if page_indices == "ALL":
+        page_indices = list(range(0, len(reader.pages)))
+
+    writer = PdfWriter()
+
+    for index in page_indices:
+        content_page = reader.pages[index]
+        stamp_page = reader_stamp.pages[index]
+
+        # Load the stamp PDF for each page
+        reader_stamp = PdfReader(stamp_pdf)
+
+         # Use o tamanho total da folha como referência
+        content_width = float(content_page.mediabox[2] - content_page.mediabox[0])
+        content_height = float(content_page.mediabox[3] - content_page.mediabox[1])
+
+
+        stamp_width = float(stamp_page.mediabox[2] - stamp_page.mediabox[0])
+        stamp_height = float(stamp_page.mediabox[3] - stamp_page.mediabox[1])
+
+
+        print(f'content_width: {content_width} / content_height: {content_height}')
+        print(f'stamp_width: {stamp_width}  /  stamp_height: {stamp_height}')
+
+        proporcao_content = (content_width, content_height)
+        largura_stamp, altura_stamp = stamp_width, stamp_height
+        # escala_1 = calcular_escala(proporcao_content, largura_stamp, altura_stamp)
+        # print(f"A escala necessária é: {escala_1}")
+
+                
+        image_page = reader_stamp.pages[0]
+        # image_page.scale_by(escala_1)
+
+
+        # largura_content, altura_content = content_width, content_height
+        # largura_stamp, altura_stamp = stamp_width * escala_1, stamp_height * escala_1
+        # new_ctm = calcular_ctm(largura_content, altura_content, largura_stamp, altura_stamp)
+
+        ctm = [1, 0, 0, 1, 1, 1]
+        # ctm = new_ctm
+
+        image_page.add_transformation(ctm)
+        
+        content_page.merge_page(image_page)
         
 
+        writer.add_page(content_page)
+
+    with open(pdf_result, "wb") as fp:
+        writer.write(fp)
 
 
-        
+def calcular_escala(proporcao_content, largura_stamp, altura_stamp):
+    largura_content, altura_content = proporcao_content
+
+
+    escala_largura = largura_content / largura_stamp
+    escala_altura = altura_content / altura_stamp
+
+
+    # Escolhe a escala mínima para manter a proporção original
+    escala = min(escala_largura, escala_altura)
+
+    escala = round(escala)
+
+    return escala
+
+def calcular_ctm(largura_content, altura_content, largura_stamp, altura_stamp):
+    # Calcula os offsets para centralizar a marca d'água
+    offset_x = (largura_content - largura_stamp) / 2
+    offset_y = (altura_content - altura_stamp) / 2
+    if offset_x < 0:
+        offset_x = 0
+    if offset_y < 0:
+        offset_y = 0
+
+    # Retorna os valores da matriz de transformação
+    return [1, 0, 0, 1, offset_x, offset_y]
+
+
+def remover_fundo_branco(caminho_da_imagem, caminho_da_saida):
+    # Abre a imagem
+    imagem = Image.open(caminho_da_imagem)
+
+    # Converte a imagem para o modo RGBA (se ainda não estiver no modo RGBA)
+    imagem = imagem.convert("RGBA")
+    dados = imagem.getdata()
+
+    # Define um valor de limiar para considerar como branco
+    limiar_branco = 200
+
+    nova_lista = []
+    for item in dados:
+        # Verifica se o pixel é branco (considerando um limiar)
+        if item[0] > limiar_branco and item[1] > limiar_branco and item[2] > limiar_branco:
+            # Torna o pixel completamente transparente
+            nova_lista.append((0, 0, 0, 0))
+        else:
+            nova_lista.append(item)
+
+    imagem.putdata(nova_lista)
+
+    # Salva a imagem sem o fundo branco
+    imagem.save(caminho_da_saida, "PNG")
+    return caminho_da_saida
+
+# def adicionar_transparencia(caminho_da_imagem, caminho_da_saida, transparencia):
+#     # Abre a imagem
+#     imagem = Image.open(caminho_da_imagem)
+
+#     # Adiciona um canal de transparência à imagem (completamente opaco)
+#     imagem = imagem.convert("RGBA")
+#     r, g, b, a = imagem.split()
+
+#     # Ajusta a transparência multiplicando pelo fator desejado
+#     novo_canal_a = a.point(lambda i: i * transparencia)
+
+#     # Combina os canais RGBA
+#     imagem = Image.merge('RGBA', (r, g, b, novo_canal_a))
+
+#     # Salva a imagem com a transparência ajustada
+#     imagem.save(caminho_da_saida, "PNG")
+#     return caminho_da_saida
+
+# def adicionar_transparencia_e_converter_para_pdf(caminho_da_imagem, caminho_do_pdf, transparencia):
+#     # Abre a imagem
+#     imagem = Image.open(caminho_da_imagem)
+
+#     # Adiciona um canal de transparência à imagem (completamente opaco)
+#     imagem = imagem.convert("RGBA")
+#     r, g, b, a = imagem.split()
+
+#     # Ajusta a transparência multiplicando pelo fator desejado
+#     novo_canal_a = a.point(lambda i: i * transparencia)
+
+#     # Combina os canais RGBA
+#     imagem_com_transparencia = Image.merge('RGBA', (r, g, b, novo_canal_a))
+
+#     # Salva a imagem com a transparência ajustada
+#     caminho_da_imagem_com_transparencia = "imagem_com_transparencia.png"
+#     imagem_com_transparencia.save(caminho_da_imagem_com_transparencia, "PNG")
+
+#     # Converte a imagem com transparência para PDF usando PyMuPDF
+#     pdf = fitz.open()
+#     pagina = pdf.new_page(width=imagem_com_transparencia.width, height=imagem_com_transparencia.height)
+
+#     # Converte a imagem Pillow para bytes
+#     imagem_bytes = imagem_com_transparencia.tobytes()
+
+#     # Cria um Pixmap diretamente da imagem
+#     imagem_pymupdf = fitz.from_pixmap(imagem_bytes)
+
+#     # Insere a imagem no PDF
+#     pagina.insert_pixmap((0, 0), imagem_pymupdf)
+
+#     # Salva o PDF
+#     pdf.save(caminho_do_pdf)
+#     pdf.close()
+
+#     return caminho_do_pdf

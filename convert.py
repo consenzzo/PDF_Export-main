@@ -75,35 +75,7 @@ def pdf_to_base64(pdf_path, page_number):
         base64_page = base64.b64encode(pdf_bytes)
         os.remove(temp_pdf_path)
         return base64_page
-    # pdf_document = fitz.open(pdf_path)
-    
-    # page = pdf_document.load_page(page_number)
-    # img_bytes = page.get_pixmap().tobytes()
-    
-    # pdf_document.close()
 
-    # base64_pdf = base64.b64encode(img_bytes)
-    # return base64_pdf
-    # with open(pdf_path, 'rb') as pdf_file:
-    #     # Lê os bytes do arquivo PDF
-    #     pdf_bytes = pdf_file.read()
-        
-    #     # Codifica os bytes para base64
-    #     codigo_base64 = base64.b64encode(pdf_bytes)
-        
-    # return codigo_base64
-
-
-# def page_to_base64(pdf_path, page_number):
-#     pdf_document = fitz.open(pdf_path)
-    
-#     page = pdf_document.load_page(page_number)
-#     img_bytes = page.get_pixmap().tobytes()
-    
-#     pdf_document.close()
-
-#     base64_pdf = base64.b64encode(img_bytes).decode('utf-8')
-#     return base64_pdf
 
 
 def base64_to_pdf(codigo_path, file_path):
@@ -130,6 +102,7 @@ def img_to_pdf(self: Ui_Menu, file_path):
     # Criação de um objeto PDF
     pdf = canvas.Canvas(pdf_file, pagesize=(largura, altura))
 
+
     # Adiciona a imagem ao PDF
     pdf.drawInlineImage(file_path, 0, 0, largura, altura)
 
@@ -139,4 +112,37 @@ def img_to_pdf(self: Ui_Menu, file_path):
     # code_base64 = pdf_to_base64(pdf_file)
     # os.remove(pdf_file)
     return pdf_file
+
+
+
+def scale_image(self: Ui_Menu, file_path, max_width, max_height):
+    try:
+        # Defina o tamanho máximo em pixels para uma página A4 (210mm x 297mm a 300 DPI)
+        img = Image.open(file_path)
+        width, height = img.size
+
+        # Verifique se a imagem precisa ser redimensionada
+        if width > max_width or height > max_height:
+            # Calcule a nova escala mantendo a proporção
+            scale = min(max_width / width, max_height / height)
+            new_width = int(width * scale)
+            new_height = int(height * scale)
+
+            # Redimensione a imagem
+            # img = img.resize((new_width, new_height), Image.ANTIALIAS)
+            img = img.resize((new_width, new_height), Image.ANTIALIAS if hasattr(Image, 'ANTIALIAS') else 3)
+            name_img = os.path.join(os.path.dirname(file_path), f"{os.path.splitext(os.path.basename(file_path))[0]}_SCALE_.png")
+            # Salve a nova imagem redimensionada
+            # scaled_path = f"{file_path}_scaled_"
+            scaled_path = name_img
+            img.save(scaled_path)
+
+            return scaled_path
+        else:
+            return False
+    except Exception as e:
+        print(f"Error scaling image: {e}")
+        return None
+    
+
 

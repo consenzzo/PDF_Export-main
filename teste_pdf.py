@@ -1,25 +1,227 @@
-# import PyPDF2
-# import base64
-from PIL import Image
+# # import PyPDF2
+# # import base64
+# from PIL import Image
+# from reportlab.pdfgen import canvas
+# from PIL import Image, ImageEnhance
+# import math
+# from pdf2image import convert_from_path
+# from PIL import Image
+# import os
 from reportlab.pdfgen import canvas
+from PyPDF2 import PdfMerger, PdfReader, PdfWriter
+from reportlab.lib.colors import Color  # Adicionado para lidar com cores e transparência
+import os
 
-def img_to_pdf(nome_imagem, nome_pdf):
-    imagem = Image.open(nome_imagem)
-    largura, altura = imagem.size
+def create_watermark_pdf(watermark_image_path):
+    # Criar diretório temporário se não existir
+    temp_directory = 'temp'
+    os.makedirs(temp_directory, exist_ok=True)
 
-    # Criação de um objeto PDF
-    pdf = canvas.Canvas(nome_pdf, pagesize=(largura, altura))
+    # Criar PDF da marca d'água
+    watermark_pdf_path = os.path.join(temp_directory, 'watermark.pdf')
+    c = canvas.Canvas(watermark_pdf_path)
 
-    # Adiciona a imagem ao PDF
-    pdf.drawInlineImage(nome_imagem, 0, 0, largura, altura)
+    # Definir o valor alfa para transparência (0 é totalmente transparente, 1 é totalmente opaco)
+    valor_alfa = 0.5  # Ajuste esse valor conforme necessário
+    branco_transparente = Color(1, 1, 1, alpha=valor_alfa)
 
-    # Salva o PDF
-    pdf.save()
+    # Desenhar a imagem com transparência
+    c.setFillColor(branco_transparente)
+    c.drawImage(watermark_image_path, 170, 300, 250, 250, mask='auto')
 
-nome_imagem = r"C:\Users\gusta\OneDrive\Área de Trabalho\marca dagua.jpg"
-nome_pdf = r"C:\Users\gusta\OneDrive\Área de Trabalho\marca dagua.pdf"
-# Substitua 'exemplo.jpg' pelo nome da sua imagem e 'saida.pdf' pelo nome desejado para o PDF
-img_to_pdf(nome_imagem, nome_pdf)
+    c.save()
+
+    return watermark_pdf_path
+
+def watermark_pdfs(input_directory, output_directory, watermark_image_path):
+    # Criar PDF da marca d'água
+    watermark_pdf_path = create_watermark_pdf(watermark_image_path)
+    watermark_pdf = PdfReader(open(watermark_pdf_path, "rb"))
+    watermark_page = watermark_pdf.pages[0]
+
+    # Criar diretório de saída se não existir
+    os.makedirs(output_directory, exist_ok=True)
+
+    # Processar cada arquivo PDF no diretório de entrada
+    for filename in os.listdir(input_directory):
+        if filename.endswith(".pdf"):
+            input_file = os.path.join(input_directory, filename)
+            output_file = os.path.join(output_directory, filename)
+
+            with open(input_file, 'rb') as f:
+                pdf_reader = PdfReader(f)
+                number_of_pages = len(pdf_reader.pages)
+                output = PdfWriter()
+
+                for x in range(number_of_pages):
+                    page_temp = pdf_reader.pages[x]
+                    page_temp.merge_page(watermark_page)
+                    output.add_page(page_temp)
+                    print(f"{x} Páginas de {number_of_pages} do Arquivo: {filename}")
+
+                with open(output_file, "wb") as merged_file:
+                    output.write(merged_file)
+            print(f"Arquivo Marcado d'água: {filename}")
+
+
+if __name__ == "__main__":
+    input_directory = r"C:\Users\gusta\OneDrive\Área de Trabalho\Nova pasta\in"  # Alterar para o seu diretório de entrada
+    output_directory = r"C:\Users\gusta\OneDrive\Área de Trabalho\Nova pasta\out"  # Alterar para o seu diretório de saída
+    watermark_image_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\marca dagua_transp.jpg" # Alterar para o caminho da sua imagem de marca d'água
+
+    watermark_pdfs(input_directory, output_directory, watermark_image_path)
+
+
+
+
+# def convert_pdf_to_images(pdf_path, output_folder, resolution=300):
+#     images = convert_from_path(pdf_path, resolution)
+#     page_images = []
+
+#     for i, image in enumerate(images):
+#         page_image_filename = os.path.join(output_folder, f'page_{i + 1}.png')
+#         image.save(page_image_filename)
+#         page_images.append(page_image_filename)
+
+#     return page_images
+
+# def apply_opacity_to_images(images, output_folder, opacity=0.5):
+#     opacity_images = []
+
+#     for image_path in images:
+#         opacity_image = apply_opacity_to_image(image_path, opacity)
+#         opacity_images.append(opacity_image)
+
+#     return opacity_images
+
+# def apply_opacity_to_image(image_path, opacity=0.5):
+#     with Image.open(image_path) as rgba_image:
+#         alpha_channel = get_opacity_value(opacity)
+#         rgba_image.putalpha(alpha_channel)
+
+#         rgb_image = Image.new('RGB', rgba_image.size, (255, 255, 255))  # white background
+#         rgb_image.paste(rgba_image, mask=rgba_image.split()[3])
+
+#         return rgb_image
+
+# def create_pdf_from_images(images, output_path):
+#     images[0].save(
+#         output_path,
+#         'PDF',
+#         resolution=100.0,
+#         save_all=True,
+#         append_images=images[1:]
+#     )
+
+# def get_opacity_value(percents):
+#     if not 0 <= percents <= 100:
+#         raise ValueError('Opacity must be a value between 0 and 100')
+    
+#     return math.ceil(255 / 100 * percents)
+
+# def main():
+#     input_pdf = r"C:\Users\gusta\OneDrive\Área de Trabalho\marca dagua.pdf"
+#     output_folder = r"C:\Users\gusta\OneDrive\Área de Trabalho\Nova pasta"
+#     output_pdf = r"C:\Users\gusta\OneDrive\Área de Trabalho\Nova pasta\marca dagua.pdf"
+#     opacity = 20
+
+#     # Criar pasta temporária para armazenar as imagens
+#     if not os.path.exists(output_folder):
+#         os.makedirs(output_folder)
+
+#     # Converter PDF em imagens
+#     images = convert_pdf_to_images(input_pdf, output_folder)
+
+#     # Aplicar opacidade às imagens
+#     opacity_images = apply_opacity_to_images(images, output_folder, opacity)
+
+#     # Criar PDF a partir das imagens com opacidade
+#     create_pdf_from_images(opacity_images, output_pdf)
+
+#     # # Limpar imagens temporárias
+#     # for image_path in images + opacity_images:
+#     #     os.remove(image_path)
+
+# if __name__ == "__main__":
+#     main()
+
+
+# def remover_fundo_branco(caminho_da_imagem, caminho_da_saida):
+#     # Abre a imagem
+#     imagem = Image.open(caminho_da_imagem)
+
+#     # Converte a imagem para o modo RGBA (se ainda não estiver no modo RGBA)
+#     imagem = imagem.convert("RGBA")
+#     dados = imagem.getdata()
+
+#     # Define um valor de limiar para considerar como branco
+#     limiar_branco = 200
+
+#     nova_lista = []
+#     for item in dados:
+#         # Verifica se o pixel é branco (considerando um limiar)
+#         if item[0] > limiar_branco and item[1] > limiar_branco and item[2] > limiar_branco:
+#             # Torna o pixel completamente transparente
+#             nova_lista.append((0, 0, 0, 0))
+#         else:
+#             nova_lista.append(item)
+
+#     imagem.putdata(nova_lista)
+
+#     # Salva a imagem sem o fundo branco
+#     imagem.save(caminho_da_saida, "PNG")
+
+# def adicionar_transparencia(caminho_da_imagem, caminho_da_saida, transparencia):
+#     # Abre a imagem
+#     imagem = Image.open(caminho_da_imagem)
+
+#     # Adiciona um canal de transparência à imagem (completamente opaco)
+#     imagem = imagem.convert("RGBA")
+#     r, g, b, a = imagem.split()
+
+#     # Ajusta a transparência multiplicando pelo fator desejado
+#     novo_canal_a = a.point(lambda i: i * transparencia)
+
+#     # Combina os canais RGBA
+#     imagem = Image.merge('RGBA', (r, g, b, novo_canal_a))
+
+#     # Salva a imagem com a transparência ajustada
+#     imagem.save(caminho_da_saida, "PNG")
+
+# entrada = r"C:\Users\gusta\OneDrive\Área de Trabalho\marca dagua.jpg"
+# saida = r"C:\Users\gusta\OneDrive\Área de Trabalho\marca dagua_transp.jpg"
+
+# remover_fundo_branco(entrada, saida)
+# # Exemplo de uso
+# adicionar_transparencia(saida, saida, transparencia=0.3)
+
+# # Exemplo de uso
+# pdf_entrada = r"C:\Users\gusta\OneDrive\Área de Trabalho\PADRONIZAÇÃO.pdf"
+# pdf_saida = r"C:\Users\gusta\OneDrive\Área de Trabalho\PADRONIZAÇÃO_teste.pdf"
+# imagem_carimbo = r"C:\Users\gusta\OneDrive\Área de Trabalho\marca dagua.pdf"
+# posicao_carimbo = (100, 100)  # posição (x, y) onde o carimbo será adicionado
+# escala_carimbo = 0.5  # escala do carimbo
+
+# adicionar_carimbo(pdf_entrada, pdf_saida, imagem_carimbo, posicao=posicao_carimbo, escala=escala_carimbo)
+
+
+# def img_to_pdf(nome_imagem, nome_pdf):
+#     imagem = Image.open(nome_imagem)
+#     largura, altura = imagem.size
+
+#     # Criação de um objeto PDF
+#     pdf = canvas.Canvas(nome_pdf, pagesize=(largura, altura))
+
+#     # Adiciona a imagem ao PDF
+#     pdf.drawInlineImage(nome_imagem, 0, 0, largura, altura)
+
+#     # Salva o PDF
+#     pdf.save()
+
+# nome_imagem = r"C:\Users\gusta\OneDrive\Área de Trabalho\marca dagua.jpg"
+# nome_pdf = r"C:\Users\gusta\OneDrive\Área de Trabalho\marca dagua.pdf"
+# # Substitua 'exemplo.jpg' pelo nome da sua imagem e 'saida.pdf' pelo nome desejado para o PDF
+# img_to_pdf(nome_imagem, nome_pdf)
 
 # def salvar_pdf_como_codigo(pdf_path, codigo_path):
 #     with open(pdf_path, 'rb') as pdf_file:

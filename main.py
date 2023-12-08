@@ -6,7 +6,7 @@ from PySide6.QtGui import QPixmap, QIcon, QMouseEvent
 from icon_button import icon_button
 from add_file import add_pages
 from display import display_image
-from edit_file import delete_selected_page, rotate_image_r, rotate_image_l
+from edit_file import delete_selected_page, rotate_image_r, rotate_image_l, move_page_up, move_page_down, on_dropped, add_watermark
 from navigation import next_page, back_page, go_to_page, zoom_in, zoom_out, zoom_slider_changed
 
 
@@ -39,9 +39,9 @@ class MyWidget(QWidget, Ui_Menu):
         self.next_pg.clicked.connect(lambda: next_page(self))
         self.back_pg.clicked.connect(lambda: back_page(self))
         self.n_pg_edit.editingFinished.connect(lambda: go_to_page(self))
-        # self.up_pg.clicked.connect(lambda: move_page_up(self))
-        # self.down_pg.clicked.connect(lambda: move_page_down(self))
-        # self.listWidget.dropped.connect(lambda initial, final: on_dropped(self, initial, final))
+        self.up_pg.clicked.connect(lambda: move_page_up(self))
+        self.down_pg.clicked.connect(lambda: move_page_down(self))
+        self.listWidget.dropped.connect(lambda initial, final: on_dropped(self, initial, final))
         # self.save_file.clicked.connect(lambda: save_file(self,"save_file"))
         # self.close_file.clicked.connect(lambda: close_file(self,"close_file"))
         self.rotate_rigth.clicked.connect(lambda: rotate_image_r(self))
@@ -52,7 +52,7 @@ class MyWidget(QWidget, Ui_Menu):
         # self.to_divide_file.clicked.connect(lambda: to_divide_file(self,"to_divide_file"))
         # self.zip_file.clicked.connect(lambda: zip_file(self,"zip_file"))
         # self.add_new_file.clicked.connect(lambda: add_pages(self, "add_new_file"))
-        # self.add_m_d_agua.clicked.connect(lambda: add_watermark(self, "add_m_d_agua"))
+        self.add_m_d_agua.clicked.connect(lambda: add_watermark(self))
 
 
 
