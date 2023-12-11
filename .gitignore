@@ -10,6 +10,7 @@ __pycache__
 /Bkp
 *teste.py
 *PDF_Export.xlsx
+*pdf_opacity_temp.pdf
 
 # Backup files #
 *.bak

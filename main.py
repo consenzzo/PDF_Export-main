@@ -51,7 +51,7 @@ class MyWidget(QWidget, Ui_Menu):
         self.horizontalSlider.valueChanged.connect(lambda value : zoom_slider_changed(self, value))
         # self.to_divide_file.clicked.connect(lambda: to_divide_file(self,"to_divide_file"))
         # self.zip_file.clicked.connect(lambda: zip_file(self,"zip_file"))
-        # self.add_new_file.clicked.connect(lambda: add_pages(self, "add_new_file"))
+        self.add_new_file.clicked.connect(lambda: add_pages(self))
         self.add_m_d_agua.clicked.connect(lambda: add_watermark(self))
 
 

@@ -183,9 +183,13 @@ def on_dropped(self:Ui_Menu, initial, final):
 
 def add_watermark(self: Ui_Menu):
 
-    watermark_path = search_watermark(self)
+    watermark_path_search = search_watermark(self)
+
 
     for item_data in self.icon_dict.values():
+        watermark_path = watermark_path_search
+        self.listWidget.setCurrentRow(int(item_data["atual"]) - 1)
+        current_item = self.listWidget.currentItem()
         base64_pdf = item_data["base64_pdf"]
         local_pdf = base64_to_pdf(base64_pdf,watermark_path)
         pdf_document = fitz.open(local_pdf)
@@ -195,17 +199,49 @@ def add_watermark(self: Ui_Menu):
         size_watermark = scale_image(self, watermark_path, current_width_pt, current_height_pt)
         if size_watermark:
             watermark_path = size_watermark
-        watermark_path = remover_fundo_branco(watermark_path,watermark_path)
+        watermark_path_white_clear = os.path.join(os.path.dirname(watermark_path), f"{os.path.splitext(os.path.basename(watermark_path))[0]}temp_WATERMARK_clear_.png")
+        watermark_path = remover_fundo_branco(watermark_path,watermark_path_white_clear)
         watermark_pdf = create_watermark_pdf(watermark_path)
         base64_watermark = pdf_to_base64(watermark_pdf,0)
         item_data["watermark_base64_pdf"] = base64_watermark
         # os.remove(local_img_pdf)
         watermark(local_pdf,watermark_pdf,'pdf_opacity_temp.pdf','ALL')
+        os.remove(local_pdf)
+        os.remove(watermark_path_white_clear)
+        os.remove(watermark_pdf)
+        try:
+            os.remove(size_watermark)
+        except:
+            pass
+        new_pdf = pdf_to_base64('pdf_opacity_temp.pdf',0)
+        self.icon_dict[int(item_data["atual"])]["base64_pdf"] = new_pdf
+
+        # Salva as alterações no novo arquivo PDF
+        pdf_document = fitz.open('pdf_opacity_temp.pdf')
+        new_page = pdf_document.load_page(0)
+        img_bytes = new_page.get_pixmap()
+        img_bytes = img_bytes.tobytes()
+
+        # Fecha o arquivo PDF
+        pdf_document.close()
+
+        self.icon_dict[int(item_data["atual"])]["icon_bytes"] = img_bytes
+        
+        # Atualize diretamente o ícone do item atual na QListWidget
+        pixmap = QPixmap()
+        pixmap.loadFromData(img_bytes)
+        pixmap = pixmap.scaledToHeight(200, Qt.SmoothTransformation)
+        
+        current_item.setIcon(QIcon(pixmap))
+        current_item.setSizeHint(QSize(pixmap.size()))
+        os.remove('pdf_opacity_temp.pdf')
+        display_image(self)
+
+
+
+
 
 def create_watermark_pdf(watermark_image_path):
-    # Criar diretório temporário se não existir
-    # temp_directory = 'temp'
-    # os.makedirs(temp_directory, exist_ok=True)
 
     # Criar PDF da marca d'água
     watermark_pdf_path = os.path.join(os.path.dirname(watermark_image_path), f"{os.path.splitext(os.path.basename(watermark_image_path))[0]}_WATERMARK_.pdf")
@@ -222,45 +258,6 @@ def create_watermark_pdf(watermark_image_path):
     c.save()
 
     return watermark_pdf_path
-
-# def watermark_pdfs(input_directory, output_directory, watermark_image_path):
-#     # Criar PDF da marca d'água
-#     watermark_pdf_path = create_watermark_pdf(watermark_image_path)
-#     watermark_pdf = PdfReader(open(watermark_pdf_path, "rb"))
-#     watermark_page = watermark_pdf.pages[0]
-
-#     # Criar diretório de saída se não existir
-#     os.makedirs(output_directory, exist_ok=True)
-
-#     # Processar cada arquivo PDF no diretório de entrada
-#     for filename in os.listdir(input_directory):
-#         if filename.endswith(".pdf"):
-#             input_file = os.path.join(input_directory, filename)
-#             output_file = os.path.join(output_directory, filename)
-
-#             with open(input_file, 'rb') as f:
-#                 pdf_reader = PdfReader(f)
-#                 number_of_pages = len(pdf_reader.pages)
-#                 output = PdfWriter()
-
-#                 for x in range(number_of_pages):
-#                     page_temp = pdf_reader.pages[x]
-#                     page_temp.merge_page(watermark_page)
-#                     output.add_page(page_temp)
-#                     print(f"{x} Páginas de {number_of_pages} do Arquivo: {filename}")
-
-#                 with open(output_file, "wb") as merged_file:
-#                     output.write(merged_file)
-#             print(f"Arquivo Marcado d'água: {filename}")
-
-
-# if __name__ == "__main__":
-#     input_directory = r"C:\Users\gusta\OneDrive\Área de Trabalho\Nova pasta\in"  # Alterar para o seu diretório de entrada
-#     output_directory = r"C:\Users\gusta\OneDrive\Área de Trabalho\Nova pasta\out"  # Alterar para o seu diretório de saída
-#     watermark_image_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\marca dagua_transp.jpg" # Alterar para o caminho da sua imagem de marca d'água
-
-#     watermark_pdfs(input_directory, output_directory, watermark_image_path)
-
 
         
 def watermark(
@@ -376,58 +373,3 @@ def remover_fundo_branco(caminho_da_imagem, caminho_da_saida):
     # Salva a imagem sem o fundo branco
     imagem.save(caminho_da_saida, "PNG")
     return caminho_da_saida
-
-# def adicionar_transparencia(caminho_da_imagem, caminho_da_saida, transparencia):
-#     # Abre a imagem
-#     imagem = Image.open(caminho_da_imagem)
-
-#     # Adiciona um canal de transparência à imagem (completamente opaco)
-#     imagem = imagem.convert("RGBA")
-#     r, g, b, a = imagem.split()
-
-#     # Ajusta a transparência multiplicando pelo fator desejado
-#     novo_canal_a = a.point(lambda i: i * transparencia)
-
-#     # Combina os canais RGBA
-#     imagem = Image.merge('RGBA', (r, g, b, novo_canal_a))
-
-#     # Salva a imagem com a transparência ajustada
-#     imagem.save(caminho_da_saida, "PNG")
-#     return caminho_da_saida
-
-# def adicionar_transparencia_e_converter_para_pdf(caminho_da_imagem, caminho_do_pdf, transparencia):
-#     # Abre a imagem
-#     imagem = Image.open(caminho_da_imagem)
-
-#     # Adiciona um canal de transparência à imagem (completamente opaco)
-#     imagem = imagem.convert("RGBA")
-#     r, g, b, a = imagem.split()
-
-#     # Ajusta a transparência multiplicando pelo fator desejado
-#     novo_canal_a = a.point(lambda i: i * transparencia)
-
-#     # Combina os canais RGBA
-#     imagem_com_transparencia = Image.merge('RGBA', (r, g, b, novo_canal_a))
-
-#     # Salva a imagem com a transparência ajustada
-#     caminho_da_imagem_com_transparencia = "imagem_com_transparencia.png"
-#     imagem_com_transparencia.save(caminho_da_imagem_com_transparencia, "PNG")
-
-#     # Converte a imagem com transparência para PDF usando PyMuPDF
-#     pdf = fitz.open()
-#     pagina = pdf.new_page(width=imagem_com_transparencia.width, height=imagem_com_transparencia.height)
-
-#     # Converte a imagem Pillow para bytes
-#     imagem_bytes = imagem_com_transparencia.tobytes()
-
-#     # Cria um Pixmap diretamente da imagem
-#     imagem_pymupdf = fitz.from_pixmap(imagem_bytes)
-
-#     # Insere a imagem no PDF
-#     pagina.insert_pixmap((0, 0), imagem_pymupdf)
-
-#     # Salva o PDF
-#     pdf.save(caminho_do_pdf)
-#     pdf.close()
-
-#     return caminho_do_pdf

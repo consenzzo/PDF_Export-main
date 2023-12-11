@@ -55,11 +55,12 @@ def add_page_dict(self:Ui_Menu, pdf):
             "icon_bytes": img_bytes,  # Bytes do ícone para armazenar
             # "local":original_file_path,
             "base64_pdf": base_64,
-            "n_pag_original":page_num,
+            # "n_pag_original":page_num,
             "rotate": 0,
-            "local_watermark":None,
+            # "local_watermark":None,
             "watermark_base64_pdf":None,
-            "watermark_transparence":None,
+            # "watermark_transparence":None,
+            
         }
         self.icon_dict[len(self.icon_dict) + 1] = item_data
 
