@@ -7,69 +7,390 @@
 # from pdf2image import convert_from_path
 # from PIL import Image
 # import os
-from reportlab.pdfgen import canvas
-from PyPDF2 import PdfMerger, PdfReader, PdfWriter
-from reportlab.lib.colors import Color  # Adicionado para lidar com cores e transparência
+# from reportlab.pdfgen import canvas
+# from PyPDF2 import PdfMerger, PdfReader, PdfWriter
+# from reportlab.lib.colors import Color  # Adicionado para lidar com cores e transparência
+# import os
+# import fitz  # PyMuPDF
+# import os
+# from docx2pdf import convert
+# from pdf2docx import Converter
+# from docx import Document
+# from zipfile import ZipFile
+# from xml.etree import ElementTree as ET
+# from docx.shared import Pt
+
+# def word_to_pdf(word_file, local_save_pg):
+#     pdf_file = os.path.join(os.path.dirname(local_save_pg), f"{os.path.splitext(os.path.basename(local_save_pg))[0]}.pdf")
+#     print(pdf_file)
+#     convert(word_file, pdf_file)
+
+# def pdf_to_word(pdf_file, local_save_pg):
+#     cv = Converter(pdf_file)
+#     docx_file = os.path.join(os.path.dirname(local_save_pg), f"{os.path.splitext(os.path.basename(local_save_pg))[0]}.docx")
+#     print(docx_file)
+#     cv.convert(docx_file, start=0, end=None)
+#     cv.close()
+#     doc = Document(docx_file)
+#     novo = copiar_documento_sem_imagem(doc,'image1')
+#     word_to_pdf(novo,local_save_pg)
+
+    
+    # image_ids = list(has_watermark_properties(docx_file))
+    # print("IDs das imagens incorporadas:", image_ids)
+
+# def has_watermark_properties(docx_path):
+#     with ZipFile(docx_path, 'r') as zip_file:
+#         rels_content = zip_file.read('word/_rels/document.xml.rels')
+#         rels_tree = ET.fromstring(rels_content)
+#         relationships = {elem.attrib['Id']: elem.attrib['Target'] for elem in rels_tree}
+
+#         for part_name in zip_file.namelist():
+#             if part_name.startswith('word/media/'):
+#                 # Obtém apenas o nome do arquivo da imagem
+#                 image_filename = os.path.basename(part_name)
+                
+#                 # Verifica se o nome do arquivo está na relação
+#                 image_id = [k for k, v in relationships.items() if v.endswith(image_filename)]
+#                 if image_id:
+#                     yield image_id[0]
+
+# def remove_image_by_name(doc, image_name):
+    # for rel in doc.part.rels.values():
+    #     if "image" in rel.reltype and image_name in rel.target_ref:
+    #         # Encontrou a relação da imagem, agora encontre a parte da imagem
+    #         image_part = rel.target_part
+    #         id_img = rel.rId
+    #         # Remove a parte da imagem do documento
+    #         doc.part._rels.pop(id_img)
+    #         break
+
+# def copiar_documento_sem_imagem(documento_original, nome_image):
+#     # Cria uma cópia do documento original
+#     novo_documento = Document()
+#     for rel in documento_original.part.rels.values():
+#         if "image" in rel.reltype and nome_image in rel.target_ref:
+#             # Encontrou a relação da imagem, agora encontre a parte da imagem
+#             image_part = rel.target_part
+#             id_imagem = rel.rId
+#             break
+
+#     for rel in documento_original.part.rels:
+#         if "image" not in documento_original.part.rels[rel].target_ref or id_imagem not in rel:
+#             # Copia as partes do documento original para o novo documento, exceto a imagem específica
+#             parte_original = documento_original.part.rels[rel].target_part
+#             novo_documento.add_part(parte_original.blob, parte_original.content_type, parte_original.partname)
+#             novo_caminho = 'Copia_original.docx'
+#             novo_documento.save(novo_caminho)
+
+#     return 'Copia_original.docx'
+import PyPDF2
+import fitz
 import os
+from docx2pdf import convert
+from pdf2docx import Converter
+from docx import Document
 
-def create_watermark_pdf(watermark_image_path):
-    # Criar diretório temporário se não existir
-    temp_directory = 'temp'
-    os.makedirs(temp_directory, exist_ok=True)
+def remove_watermark(input_path, output_path):
+    with open(input_path, 'rb') as file:
+        pdf_reader = PyPDF2.PdfReader(file)
+        pdf_writer = PyPDF2.PdfWriter()
 
-    # Criar PDF da marca d'água
-    watermark_pdf_path = os.path.join(temp_directory, 'watermark.pdf')
-    c = canvas.Canvas(watermark_pdf_path)
+        for page_num in range(len(pdf_reader.pages)):
+            page = pdf_reader.pages[page_num]
+            x_objects = page['/Resources']['/XObject'].get_object() if '/XObject' in page['/Resources'] else {}
 
-    # Definir o valor alfa para transparência (0 é totalmente transparente, 1 é totalmente opaco)
-    valor_alfa = 0.5  # Ajuste esse valor conforme necessário
-    branco_transparente = Color(1, 1, 1, alpha=valor_alfa)
+            # Lista para armazenar chaves (nomes) dos objetos a serem removidos
+            objects_to_remove = []
 
-    # Desenhar a imagem com transparência
-    c.setFillColor(branco_transparente)
-    c.drawImage(watermark_image_path, 170, 300, 250, 250, mask='auto')
+            for obj in x_objects:
+                if x_objects[obj]['/Subtype'] == '/Image':
+                    image_info = x_objects[obj]
 
-    c.save()
+                    # Verificar se o filtro é ['/ASCII85Decode', '/FlateDecode']
+                    filters = x_objects[obj]['/Filter'] if '/Filter' in x_objects[obj] else []
+                    has_correct_filter = filters == ['/ASCII85Decode', '/FlateDecode']
 
-    return watermark_pdf_path
+                    # Verificar se a máscara de transparência está presente e é indireta
+                    has_smask = '/SMask' in x_objects[obj]
+                    smask_is_indirect = isinstance(x_objects[obj].get('/SMask'), PyPDF2.generic.IndirectObject)
 
-def watermark_pdfs(input_directory, output_directory, watermark_image_path):
-    # Criar PDF da marca d'água
-    watermark_pdf_path = create_watermark_pdf(watermark_image_path)
-    watermark_pdf = PdfReader(open(watermark_pdf_path, "rb"))
-    watermark_page = watermark_pdf.pages[0]
+                    if has_correct_filter and (not has_smask or (has_smask and smask_is_indirect)):
+                        print(f"Page {page_num + 1}, Image Object {obj}: {image_info}")
+                        objects_to_remove.append(obj)
 
-    # Criar diretório de saída se não existir
-    os.makedirs(output_directory, exist_ok=True)
+            # Remover objetos XObject da página
+            for obj_key in objects_to_remove:
+                page['/Resources']['/XObject'].pop(obj_key)
 
-    # Processar cada arquivo PDF no diretório de entrada
-    for filename in os.listdir(input_directory):
-        if filename.endswith(".pdf"):
-            input_file = os.path.join(input_directory, filename)
-            output_file = os.path.join(output_directory, filename)
+            pdf_writer.add_page(page)
 
-            with open(input_file, 'rb') as f:
-                pdf_reader = PdfReader(f)
-                number_of_pages = len(pdf_reader.pages)
-                output = PdfWriter()
-
-                for x in range(number_of_pages):
-                    page_temp = pdf_reader.pages[x]
-                    page_temp.merge_page(watermark_page)
-                    output.add_page(page_temp)
-                    print(f"{x} Páginas de {number_of_pages} do Arquivo: {filename}")
-
-                with open(output_file, "wb") as merged_file:
-                    output.write(merged_file)
-            print(f"Arquivo Marcado d'água: {filename}")
+        with open(output_path, 'wb') as output_file:
+            pdf_writer.write(output_file)
 
 
-if __name__ == "__main__":
-    input_directory = r"C:\Users\gusta\OneDrive\Área de Trabalho\Nova pasta\in"  # Alterar para o seu diretório de entrada
-    output_directory = r"C:\Users\gusta\OneDrive\Área de Trabalho\Nova pasta\out"  # Alterar para o seu diretório de saída
-    watermark_image_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\marca dagua_transp.jpg" # Alterar para o caminho da sua imagem de marca d'água
+def word_to_pdf(word_file, local_save_pg):
+    pdf_file = os.path.join(os.path.dirname(local_save_pg), f"{os.path.splitext(os.path.basename(local_save_pg))[0]}.pdf")
+    print(pdf_file)
+    convert(word_file, pdf_file)
 
-    watermark_pdfs(input_directory, output_directory, watermark_image_path)
+def pdf_to_word(pdf_file, local_save_pg):
+    cv = Converter(pdf_file)
+    docx_file = os.path.join(os.path.dirname(local_save_pg), f"{os.path.splitext(os.path.basename(local_save_pg))[0]}.docx")
+    print(docx_file)
+    cv.convert(docx_file, start=0, end=None)
+    cv.close()
+
+output_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\pdf_opacity_temp_AGUA.pdf"
+pdf_file = r"C:\Users\gusta\OneDrive\Área de Trabalho\pdf_opacity_temp.pdf"
+word_file = r"C:\Users\gusta\OneDrive\Área de Trabalho\pdf_opacity_temp_AGUA_word.docx"
+new_pdf = r"C:\Users\gusta\OneDrive\Área de Trabalho\pdf_opacity_temp_AGUA_NEW.pdf"
+remove_watermark(pdf_file, output_path)
+pdf_to_word(output_path,word_file)
+word_to_pdf(word_file,new_pdf)
+def remove_watermark(input_pdf, output_pdf):
+    # Abrir o documento PDF
+    doc = fitz.open(input_pdf)
+
+    # Iterar sobre as páginas do PDF
+    for page_number in range(doc.page_count):
+        page = doc[page_number]
+
+        # Padronizar os objetos da página /Contents
+        page.clean_contents()
+
+        # Obter o xref do objeto /Contents resultante após a padronização
+        xref = page.get_contents()[0]
+        
+        # Ler o conteúdo fonte como um bytearray (objeto de array de bytes modificável)
+        cont = bytearray(page.read_contents())
+        print(cont)
+
+        # Confirmar a presença de uma marca d'água do tipo "marked-content watermark"
+        if cont.find(b"/Subtype/Watermark") > 0:
+            print(f"Marca d'água encontrada na página {page_number + 1}")
+
+            # Loop para remover todas as ocorrências de marcas d'água
+            while True:
+                i1 = cont.find(b"/Artifact")  # Encontrar o início da definição da marca d'água
+                if i1 < 0:
+                    break  # Se não encontrar mais ocorrências, encerrar o loop
+
+                i2 = cont.find(b"EMC", i1)  # Encontrar o final da definição da marca d'água
+                cont[i1 - 2 : i2 + 3] = b""  # Remover a definição completa da marca d'água ("q ... EMC")
+
+            # Atualizar o stream com o conteúdo modificado
+            doc.update_stream(xref, cont)
+
+    # Salvar o documento resultante em um novo arquivo
+    doc.save(output_pdf)
+    doc.close()
+
+# # Exemplo de uso
+# input_pdf_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\PADRONIZAÇÃO - Copia.pdf"
+# output_pdf_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\PADRONIZAÇÃO - Copia_TESTE.pdf"
+
+# remove_watermark(input_pdf_path, output_pdf_path)
+# def extract_full_postscript(input_pdf):
+#     # Abrir o documento PDF
+#     doc = fitz.open(input_pdf)
+
+#     # Inicializar uma string para armazenar o código PostScript completo
+#     full_postscript = ""
+
+#     # Iterar sobre as páginas do PDF
+#     for page_number in range(doc.page_count):
+#         page = doc[page_number]
+
+#         # Obter o código PostScript da página
+#         page_postscript = page.get_text("PS", clip=page.rect)
+
+#         # Adicionar o código PostScript da página ao acumulador
+#         full_postscript += page_postscript
+
+#     # Fechar o documento
+#     doc.close()
+
+#     return full_postscript
+
+
+# def extract_xref(input_pdf):
+#     # Abrir o documento PDF
+#     doc = fitz.open(input_pdf)
+
+#     # Inicializar uma string para armazenar todo o conteúdo
+#     full_content = ""
+
+#     # Iterar sobre as páginas do PDF
+#     for page_number in range(doc.page_count):
+#         page = doc[page_number]
+
+#         # Obter o conteúdo da página como uma string
+#         page_content = page.get_contents()
+#         for cont in page_content:
+#             cont = bytearray(page.read_contents())
+#             print(cont)
+#         # print(page_content)
+
+#         # Adicionar o conteúdo da página à string completa
+#         # full_content += page_content
+
+#     # Fechar o documento
+#     doc.close()
+
+#     return full_content
+
+# # def add_watermark(input_pdf, output_pdf, watermark_text):
+# #     # Abrir o documento PDF
+# #     doc = fitz.open(input_pdf)
+
+# #     # Iterar sobre as páginas do PDF
+# #     for page_number in range(doc.page_count):
+# #         page = doc[page_number]
+
+# #         # Obter o conteúdo da página como bytes
+# #         page_bytes = bytearray(page.get_contents())
+
+# #         # Adicionar marca d'água
+# #         watermark = f"Marca d'água: {watermark_text}\n"
+# #         page_bytes += watermark.encode("utf-8")
+
+# #         # Substituir os bytes do conteúdo da página
+# #         page.set_contents(bytes(page_bytes))
+
+# #     # Salvar o novo PDF
+# #     doc.save(output_pdf)
+
+# #     # Fechar o documento
+# #     doc.close()
+# # # Exemplo de uso
+# # input_pdf_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\PADRONIZAÇÃO - Copia.pdf"
+# # output_pdf_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\PADRONIZAÇÃO - Copia_TESTE.pdf"
+# # Exemplo de uso
+# # add_watermark(input_pdf_path, output_pdf_path, "Confidencial")
+
+
+
+
+
+
+
+# # # Exemplo de uso
+# pdf_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\Projeto_Python\PDF_Export-main\pdf_opacity_temp.pdf"
+# # page_number = 1  # Número da página que você deseja extrair
+# # # postscript_code = extract_full_postscript(pdf_path)
+# # # Imprimir ou salvar o código PostScript conforme necessário
+# # # print(postscript_code)
+# # # # ou
+# # # with open("output.ps", "w", encoding="utf-8") as file:
+# # #     file.write(postscript_code)
+# xref_do_documento = extract_xref(pdf_path)
+# # Exibir o XRef
+# print(xref_do_documento)
+
+
+
+
+# import fitz  # PyMuPDF
+# from pathlib import Path
+
+# def add_watermark(input_pdf, watermark_image_path, output_pdf):
+#     # Abrir o documento PDF
+#     doc = fitz.open(input_pdf)
+
+#     # Iterar sobre as páginas do PDF
+#     for page_number in range(doc.page_count):
+#         page = doc[page_number]
+
+#         # Carregar a imagem da marca d'água
+#         watermark_image = fitz.Pixmap(watermark_image_path)
+
+#         # Adicionar a imagem como uma anotação na página
+#         watermark = page.insert_image(
+#             (100, 100),  # Posição da marca d'água na página
+#             pixmap=watermark_image,
+#             overlay=True
+#         )
+
+#         # Adicionar a informação do subtipo Watermark diretamente ao dicionário de anotações
+#         watermark.info["Subtype"] = "/Watermark"
+
+#         # Liberar a memória da imagem da marca d'água
+#         watermark_image = None
+
+#     # Salvar o documento resultante em um novo arquivo
+#     doc.save(output_pdf)
+#     doc.close()
+
+
+# input_pdf_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\PADRONIZAÇÃO.pdf"
+# output_pdf_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\PADRONIZAÇÃO - Copia_TESTE.pdf"
+# watermark_file = r"C:\Users\gusta\OneDrive\Área de Trabalho\page_1.png"
+# # Exemplo de uso
+# add_watermark(input_pdf_path, watermark_file, output_pdf_path)
+
+
+
+
+
+# def create_watermark_pdf(watermark_image_path):
+#     # Criar diretório temporário se não existir
+#     temp_directory = 'temp'
+#     os.makedirs(temp_directory, exist_ok=True)
+
+#     # Criar PDF da marca d'água
+#     watermark_pdf_path = os.path.join(temp_directory, 'watermark.pdf')
+#     c = canvas.Canvas(watermark_pdf_path)
+
+#     # Definir o valor alfa para transparência (0 é totalmente transparente, 1 é totalmente opaco)
+#     valor_alfa = 0.5  # Ajuste esse valor conforme necessário
+#     branco_transparente = Color(1, 1, 1, alpha=valor_alfa)
+
+#     # Desenhar a imagem com transparência
+#     c.setFillColor(branco_transparente)
+#     c.drawImage(watermark_image_path, 170, 300, 250, 250, mask='auto')
+
+#     c.save()
+
+#     return watermark_pdf_path
+
+# def watermark_pdfs(input_directory, output_directory, watermark_image_path):
+#     # Criar PDF da marca d'água
+#     watermark_pdf_path = create_watermark_pdf(watermark_image_path)
+#     watermark_pdf = PdfReader(open(watermark_pdf_path, "rb"))
+#     watermark_page = watermark_pdf.pages[0]
+
+#     # Criar diretório de saída se não existir
+#     os.makedirs(output_directory, exist_ok=True)
+
+#     # Processar cada arquivo PDF no diretório de entrada
+#     for filename in os.listdir(input_directory):
+#         if filename.endswith(".pdf"):
+#             input_file = os.path.join(input_directory, filename)
+#             output_file = os.path.join(output_directory, filename)
+
+#             with open(input_file, 'rb') as f:
+#                 pdf_reader = PdfReader(f)
+#                 number_of_pages = len(pdf_reader.pages)
+#                 output = PdfWriter()
+
+#                 for x in range(number_of_pages):
+#                     page_temp = pdf_reader.pages[x]
+#                     page_temp.merge_page(watermark_page)
+#                     output.add_page(page_temp)
+#                     print(f"{x} Páginas de {number_of_pages} do Arquivo: {filename}")
+
+#                 with open(output_file, "wb") as merged_file:
+#                     output.write(merged_file)
+#             print(f"Arquivo Marcado d'água: {filename}")
+
+
+# if __name__ == "__main__":
+#     input_directory = r"C:\Users\gusta\OneDrive\Área de Trabalho\Nova pasta\in"  # Alterar para o seu diretório de entrada
+#     output_directory = r"C:\Users\gusta\OneDrive\Área de Trabalho\Nova pasta\out"  # Alterar para o seu diretório de saída
+#     watermark_image_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\marca dagua_transp.jpg" # Alterar para o caminho da sua imagem de marca d'água
+
+#     watermark_pdfs(input_directory, output_directory, watermark_image_path)
 
 
 

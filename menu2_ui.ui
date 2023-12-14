@@ -49,7 +49,7 @@
         <string notr="true">background-color: rgb(0, 142, 255); color: rgb(255, 255, 255); font: 700 14pt &quot;Yu Gothic UI&quot;;</string>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="page">
         <property name="geometry">
@@ -183,6 +183,40 @@
               </property>
               <property name="text">
                <string>Adicionar Marca D'água</string>
+              </property>
+              <property name="checkable">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCommandLinkButton" name="delete_m_d_agua">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>198</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QCommandLinkButton {font: 11pt &quot;Segoe UI&quot;; } QCommandLinkButton:checked {background-color: rgb(0, 166, 237);color: white; }</string>
+              </property>
+              <property name="text">
+               <string>Remover Marca D'água</string>
               </property>
               <property name="checkable">
                <bool>false</bool>

@@ -90,6 +90,18 @@ class Ui_Menu(object):
 
         self.verticalLayout_2.addWidget(self.add_m_d_agua)
 
+        self.delete_m_d_agua = QCommandLinkButton(self.verticalGroupBox)
+        self.delete_m_d_agua.setObjectName(u"delete_m_d_agua")
+        sizePolicy1.setHeightForWidth(self.delete_m_d_agua.sizePolicy().hasHeightForWidth())
+        self.delete_m_d_agua.setSizePolicy(sizePolicy1)
+        self.delete_m_d_agua.setMinimumSize(QSize(198, 0))
+        self.delete_m_d_agua.setMaximumSize(QSize(16777215, 50))
+        self.delete_m_d_agua.setCursor(QCursor(Qt.PointingHandCursor))
+        self.delete_m_d_agua.setStyleSheet(u"QCommandLinkButton {font: 11pt \"Segoe UI\"; } QCommandLinkButton:checked {background-color: rgb(0, 166, 237);color: white; }")
+        self.delete_m_d_agua.setCheckable(False)
+
+        self.verticalLayout_2.addWidget(self.delete_m_d_agua)
+
         self.add_n_pg = QCommandLinkButton(self.verticalGroupBox)
         self.add_n_pg.setObjectName(u"add_n_pg")
         sizePolicy1.setHeightForWidth(self.add_n_pg.sizePolicy().hasHeightForWidth())
@@ -720,7 +732,7 @@ class Ui_Menu(object):
 
         self.retranslateUi(Menu)
 
-        self.toolBox.setCurrentIndex(1)
+        self.toolBox.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(Menu)
@@ -731,6 +743,7 @@ class Ui_Menu(object):
         Menu.setWindowFilePath("")
         self.add_new_file.setText(QCoreApplication.translate("Menu", u"Adicionar Documentos", None))
         self.add_m_d_agua.setText(QCoreApplication.translate("Menu", u"Adicionar Marca D'\u00e1gua", None))
+        self.delete_m_d_agua.setText(QCoreApplication.translate("Menu", u"Remover Marca D'\u00e1gua", None))
         self.add_n_pg.setText(QCoreApplication.translate("Menu", u"Adicionar N\u00ba de P\u00e1gina", None))
         self.delete_page_menu.setText(QCoreApplication.translate("Menu", u"Remover P\u00e1ginas", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("Menu", u"Editar", None))

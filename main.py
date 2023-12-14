@@ -6,7 +6,7 @@ from PySide6.QtGui import QPixmap, QIcon, QMouseEvent
 from icon_button import icon_button
 from add_file import add_pages
 from display import display_image
-from edit_file import delete_selected_page, rotate_image_r, rotate_image_l, move_page_up, move_page_down, on_dropped, add_watermark
+from edit_file import delete_selected_page, rotate_image_r, rotate_image_l, move_page_up, move_page_down, on_dropped, add_watermark,remove_watermark
 from navigation import next_page, back_page, go_to_page, zoom_in, zoom_out, zoom_slider_changed
 
 
@@ -53,6 +53,7 @@ class MyWidget(QWidget, Ui_Menu):
         # self.zip_file.clicked.connect(lambda: zip_file(self,"zip_file"))
         self.add_new_file.clicked.connect(lambda: add_pages(self))
         self.add_m_d_agua.clicked.connect(lambda: add_watermark(self))
+        self.delete_m_d_agua.clicked.connect(lambda: remove_watermark(self))
 
 
 

@@ -8,6 +8,7 @@ import base64
 from PIL import Image
 from reportlab.pdfgen import canvas
 import fitz  # PyMuPDF
+from pdf2docx import Converter
 
 def excel_to_pdf(self: Ui_Menu, file_path):
     with xw.App() as app:
@@ -146,3 +147,9 @@ def scale_image(self: Ui_Menu, file_path, max_width, max_height):
     
 
 
+def pdf_to_word(self: Ui_Menu, pdf_file , local_save_pg):
+    cv = Converter(pdf_file)
+    docx_file = os.path.join(os.path.dirname(local_save_pg), f"{os.path.splitext(os.path.basename(local_save_pg))[0]}.docx")
+    print(docx_file)
+    cv.convert(docx_file, start=0, end=None)
+    cv.close()

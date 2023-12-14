@@ -4,7 +4,7 @@ from PySide6.QtGui import QPixmap, QIcon, QTransform
 from PySide6.QtCore import QByteArray, QBuffer, QIODevice, QSize, Qt, Slot
 import base64
 from icon_button import icon_button
-from convert import base64_to_pdf, pdf_to_base64, img_to_pdf, scale_image
+from convert import base64_to_pdf, pdf_to_base64, img_to_pdf, scale_image, word_to_pdf, pdf_to_word
 import fitz  # PyMuPDF
 import os
 from display import  display_image
@@ -16,8 +16,9 @@ from PIL import Image, ImageEnhance
 import math
 from pdf2image import convert_from_path
 from reportlab.pdfgen import canvas
-from PyPDF2 import PdfMerger, PdfReader, PdfWriter
+from PyPDF2 import PdfMerger, PdfReader, PdfWriter, generic
 from reportlab.lib.colors import Color  # Adicionado para lidar com cores e transparência
+import shutil
 
 
 def delete_selected_page(self:Ui_Menu):
@@ -277,6 +278,8 @@ def watermark(
         content_page = reader.pages[index]
         stamp_page = reader_stamp.pages[index]
 
+        
+
         # Load the stamp PDF for each page
         reader_stamp = PdfReader(stamp_pdf)
 
@@ -300,6 +303,7 @@ def watermark(
                 
         image_page = reader_stamp.pages[0]
         # image_page.scale_by(escala_1)
+        
 
 
         # largura_content, altura_content = content_width, content_height
@@ -312,12 +316,15 @@ def watermark(
         image_page.add_transformation(ctm)
         
         content_page.merge_page(image_page)
+
         
 
         writer.add_page(content_page)
 
     with open(pdf_result, "wb") as fp:
         writer.write(fp)
+    
+
 
 
 def calcular_escala(proporcao_content, largura_stamp, altura_stamp):
@@ -373,3 +380,150 @@ def remover_fundo_branco(caminho_da_imagem, caminho_da_saida):
     # Salva a imagem sem o fundo branco
     imagem.save(caminho_da_saida, "PNG")
     return caminho_da_saida
+
+
+def remove_watermark(self: Ui_Menu):
+    for item_data in self.icon_dict.values():
+        self.listWidget.setCurrentRow(int(item_data["atual"]) - 1)
+        current_item = self.listWidget.currentItem()
+        # base64_dict = item_data["base64_pdf"]
+        pdf_file = base64_to_pdf(item_data["base64_pdf"],'temp_base_pdfwater_export.pdf')
+         # Tenta remover a marca d'água usando remove_watermark_type01
+        remove_watermark_type01_success = remove_watermark_type01(pdf_file, 'temp_output_export_water.pdf')
+        # Se remove_watermark_type01 não removeu nada, chama remove_watermark_type02
+        if not remove_watermark_type01_success:
+            
+            remove_watermark_type02_success = remove_watermark_type02(pdf_file, 'temp_output_export_water.pdf')
+
+            if not remove_watermark_type02_success:
+                shutil.copy(pdf_file, 'temp_output_export_water.pdf')
+                new_pdf = 'temp_output_export_water.pdf'
+            else:
+                pdf_to_word(self, 'temp_output_export_water.pdf', 'temp_output_export_water.docx')
+                new_pdf = word_to_pdf(self, 'temp_output_export_water.docx')
+        else:
+            new_pdf = 'temp_output_export_water.pdf'
+
+        base64_new_pdf = pdf_to_base64(new_pdf,0)
+        self.icon_dict[int(item_data["atual"])]["watermark_base64_pdf"] = None
+        self.icon_dict[int(item_data["atual"])]["base64_pdf"] = base64_new_pdf
+
+        # Salva as alterações no novo arquivo PDF
+        pdf_document = fitz.open(new_pdf)
+        new_page = pdf_document.load_page(0)
+        img_bytes = new_page.get_pixmap()
+        img_bytes = img_bytes.tobytes()
+
+        # Fecha o arquivo PDF
+        pdf_document.close()
+
+        self.icon_dict[int(item_data["atual"])]["icon_bytes"] = img_bytes
+        
+        # Atualize diretamente o ícone do item atual na QListWidget
+        pixmap = QPixmap()
+        pixmap.loadFromData(img_bytes)
+        pixmap = pixmap.scaledToHeight(200, Qt.SmoothTransformation)
+        
+        current_item.setIcon(QIcon(pixmap))
+        current_item.setSizeHint(QSize(pixmap.size()))
+        os.remove(new_pdf)
+        try:
+            os.remove('temp_output_export_water.docx')
+        except:
+            pass
+        os.remove(pdf_file)
+        display_image(self)
+
+
+
+            
+        
+
+
+
+
+def remove_watermark_type02(input_path, output_path):
+    with open(input_path, 'rb') as file:
+        pdf_reader = PdfReader(file)
+        pdf_writer = PdfWriter()
+
+        for page_num in range(len(pdf_reader.pages)):
+            page = pdf_reader.pages[page_num]
+            x_objects = page['/Resources']['/XObject'].get_object() if '/XObject' in page['/Resources'] else {}
+
+            # Lista para armazenar chaves (nomes) dos objetos a serem removidos
+            objects_to_remove = []
+
+            for obj in x_objects:
+                if x_objects[obj]['/Subtype'] == '/Image':
+                    image_info = x_objects[obj]
+
+                    # Verificar se o filtro é ['/ASCII85Decode', '/FlateDecode']
+                    filters = x_objects[obj]['/Filter'] if '/Filter' in x_objects[obj] else []
+                    has_correct_filter = filters == ['/ASCII85Decode', '/FlateDecode']
+
+                    # Verificar se a máscara de transparência está presente e é indireta
+                    has_smask = '/SMask' in x_objects[obj]
+                    smask_is_indirect = isinstance(x_objects[obj].get('/SMask'), generic.IndirectObject)
+
+                    if has_correct_filter and (not has_smask or (has_smask and smask_is_indirect)):
+                        print(f"Page {page_num + 1}, Image Object {obj}: {image_info}")
+                        objects_to_remove.append(obj)
+
+            # Remover objetos XObject da página
+            for obj_key in objects_to_remove:
+                page['/Resources']['/XObject'].pop(obj_key)
+
+            pdf_writer.add_page(page)
+
+        if len(objects_to_remove) == 0:
+            return False
+        
+        else:
+
+            with open(output_path, 'wb') as output_file:
+                pdf_writer.write(output_file)
+            return True
+
+
+def remove_watermark_type01(input_pdf, output_pdf):
+    is_watermark = False
+    # Abrir o documento PDF
+    doc = fitz.open(input_pdf)
+
+    # Iterar sobre as páginas do PDF
+    for page_number in range(doc.page_count):
+        page = doc[page_number]
+
+        # Padronizar os objetos da página /Contents
+        page.clean_contents()
+
+        # Obter o xref do objeto /Contents resultante após a padronização
+        xref = page.get_contents()[0]
+        
+        # Ler o conteúdo fonte como um bytearray (objeto de array de bytes modificável)
+        cont = bytearray(page.read_contents())
+        # print(cont)
+
+        # Confirmar a presença de uma marca d'água do tipo "marked-content watermark"
+        if cont.find(b"/Subtype/Watermark") > 0:
+            print(f"Marca d'água encontrada na página {page_number + 1}")
+
+            # Loop para remover todas as ocorrências de marcas d'água
+            while True:
+                i1 = cont.find(b"/Artifact")  # Encontrar o início da definição da marca d'água
+                if i1 < 0:
+                    break  # Se não encontrar mais ocorrências, encerrar o loop
+
+                i2 = cont.find(b"EMC", i1)  # Encontrar o final da definição da marca d'água
+                cont[i1 - 2 : i2 + 3] = b""  # Remover a definição completa da marca d'água ("q ... EMC")
+                is_watermark = True
+            # Atualizar o stream com o conteúdo modificado
+            doc.update_stream(xref, cont)
+
+            # Salvar o documento resultante em um novo arquivo
+            doc.save(output_pdf)
+            doc.close()
+            return is_watermark
+    return is_watermark
+    
