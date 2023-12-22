@@ -8,7 +8,7 @@ from add_file import add_pages
 from display import display_image, close_file
 from edit_file import delete_selected_page, rotate_image_r, rotate_image_l, move_page_up, move_page_down, on_dropped, add_watermark,remove_watermark,add_footer,remove_n_page
 from navigation import next_page, back_page, go_to_page, zoom_in, zoom_out, zoom_slider_changed
-from save_file import save_file_pdf, save_file_word,save_file_excel, save_file_png,save_file_jpg
+from save_file import save_file_pdf, save_file_word,save_file_excel, save_file_png,save_file_jpg, zip_file
 from password import remove_password, password_pdf
 
 class MyWidget(QWidget, Ui_Menu):
@@ -52,7 +52,7 @@ class MyWidget(QWidget, Ui_Menu):
         self.zoom_out.clicked.connect(lambda: zoom_out(self))
         self.horizontalSlider.valueChanged.connect(lambda value : zoom_slider_changed(self, value))
         # self.to_divide_file.clicked.connect(lambda: to_divide_file(self,"to_divide_file"))
-        # self.zip_file.clicked.connect(lambda: zip_file(self,"zip_file"))
+        self.zip_file.clicked.connect(lambda: zip_file(self))
         self.add_new_file.clicked.connect(lambda: add_pages(self))
         self.add_m_d_agua.clicked.connect(lambda: add_watermark(self))
         self.delete_m_d_agua.clicked.connect(lambda: remove_watermark(self))

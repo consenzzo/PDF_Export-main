@@ -1,9 +1,11 @@
 from menu2_ui import Ui_Menu
-from PySide6.QtWidgets import  QFileDialog, QDialog
+from PySide6.QtWidgets import  QFileDialog, QDialog, QMessageBox
 import fitz
 from convert import base64_to_pdf, pdf_to_word, pdf_to_excel, pdf_to_png, pdf_to_jpg
 import os
 from PIL import Image
+import zipfile
+
 
 def save_file_pdf(self:Ui_Menu):
     save_path, _ = QFileDialog.getSaveFileName(self, "Salvar PDF", "", "PDF Files (*.pdf)")
@@ -116,3 +118,31 @@ def save_file_jpg(self:Ui_Menu):
         doc_saida.close()
         pdf_to_jpg(self,'temp_pdf_export_to_excel.pdf',save_path)
         os.remove('temp_pdf_export_to_excel.pdf')
+
+
+
+def zip_file(self: Ui_Menu):
+    save_path, _ = QFileDialog.getSaveFileName(self, "Salvar ZIP", "", "ZIP Files (*.zip)")
+    if save_path:
+        sorted_pages = sorted(self.icon_dict.items(), key=lambda x: int(x[1]["atual"]))
+        doc_saida = fitz.open()
+        for page_number, page_data in sorted_pages:
+            base64_to_file = base64_to_pdf(page_data["base64_pdf"], 'temp_pdf_export_base64_to_pdf.pdf')
+            doc_entrada = fitz.open()
+
+            doc_saida.insert_pdf(fitz.open(base64_to_file))
+
+            doc_entrada.close()
+            os.remove(base64_to_file)
+
+        temp_pdf_path = 'temp_pdf_zip_export_pdf.pdf'
+        doc_saida.save(temp_pdf_path)
+        doc_saida.close()  # Agora, fechamos o documento após salvá-lo
+
+        # Salvar o arquivo ZIP diretamente com o PDF
+        with zipfile.ZipFile(save_path, 'w') as zipf:
+            zipf.write(temp_pdf_path, os.path.basename(temp_pdf_path))
+
+        os.remove(temp_pdf_path)
+
+        QMessageBox.information(self, "Sucesso", "Arquivo compactado com sucesso!")

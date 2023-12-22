@@ -670,21 +670,6 @@ class Ui_Menu(object):
 
         self.horizontalLayout.addWidget(self.zip_file)
 
-        self.horizontalSpacer_10 = QSpacerItem(20, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
-
-        self.horizontalLayout.addItem(self.horizontalSpacer_10)
-
-        self.to_divide_file = CustomLabel(self.frame)
-        self.to_divide_file.setObjectName(u"to_divide_file")
-        self.to_divide_file.setMinimumSize(QSize(30, 30))
-        self.to_divide_file.setMaximumSize(QSize(30, 30))
-        self.to_divide_file.setCursor(QCursor(Qt.PointingHandCursor))
-        self.to_divide_file.setTextFormat(Qt.AutoText)
-        self.to_divide_file.setScaledContents(True)
-        self.to_divide_file.setAlignment(Qt.AlignCenter)
-
-        self.horizontalLayout.addWidget(self.to_divide_file)
-
         self.horizontalSpacer_5 = QSpacerItem(20, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer_5)
@@ -817,10 +802,6 @@ class Ui_Menu(object):
         self.zip_file.setToolTip(QCoreApplication.translate("Menu", u"Compactar", None))
 #endif // QT_CONFIG(tooltip)
         self.zip_file.setText(QCoreApplication.translate("Menu", u"zip_file", None))
-#if QT_CONFIG(tooltip)
-        self.to_divide_file.setToolTip(QCoreApplication.translate("Menu", u"Dividir documento", None))
-#endif // QT_CONFIG(tooltip)
-        self.to_divide_file.setText(QCoreApplication.translate("Menu", u"to_divide_file", None))
 #if QT_CONFIG(tooltip)
         self.save_file.setToolTip(QCoreApplication.translate("Menu", u"Salvar", None))
 #endif // QT_CONFIG(tooltip)
