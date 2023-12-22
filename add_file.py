@@ -62,7 +62,13 @@ def add_page_dict(self:Ui_Menu, pdf):
             # "watermark_transparence":None,
             
         }
-        self.icon_dict[len(self.icon_dict) + 1] = item_data
+        if self.icon_dict:
+            max_id = max(self.icon_dict)
+            
+        else:
+            max_id = 0
+            
+        self.icon_dict[max_id + 1] = item_data
 
         pixmap_list = render_img_byte(self,img_bytes)
         self.listWidget.addItem(pixmap_list)

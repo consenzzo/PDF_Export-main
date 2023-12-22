@@ -114,6 +114,18 @@ class Ui_Menu(object):
 
         self.verticalLayout_2.addWidget(self.add_n_pg)
 
+        self.delete_n_pg = QCommandLinkButton(self.verticalGroupBox)
+        self.delete_n_pg.setObjectName(u"delete_n_pg")
+        sizePolicy1.setHeightForWidth(self.delete_n_pg.sizePolicy().hasHeightForWidth())
+        self.delete_n_pg.setSizePolicy(sizePolicy1)
+        self.delete_n_pg.setMinimumSize(QSize(198, 0))
+        self.delete_n_pg.setMaximumSize(QSize(16777215, 50))
+        self.delete_n_pg.setCursor(QCursor(Qt.PointingHandCursor))
+        self.delete_n_pg.setStyleSheet(u"QCommandLinkButton {font: 11pt \"Segoe UI\"; } QCommandLinkButton:checked {background-color: rgb(0, 166, 237);color: white; }")
+        self.delete_n_pg.setCheckable(False)
+
+        self.verticalLayout_2.addWidget(self.delete_n_pg)
+
         self.delete_page_menu = QCommandLinkButton(self.verticalGroupBox)
         self.delete_page_menu.setObjectName(u"delete_page_menu")
         sizePolicy1.setHeightForWidth(self.delete_page_menu.sizePolicy().hasHeightForWidth())
@@ -745,6 +757,7 @@ class Ui_Menu(object):
         self.add_m_d_agua.setText(QCoreApplication.translate("Menu", u"Adicionar Marca D'\u00e1gua", None))
         self.delete_m_d_agua.setText(QCoreApplication.translate("Menu", u"Remover Marca D'\u00e1gua", None))
         self.add_n_pg.setText(QCoreApplication.translate("Menu", u"Adicionar N\u00ba de P\u00e1gina", None))
+        self.delete_n_pg.setText(QCoreApplication.translate("Menu", u"Remover N\u00ba de P\u00e1gina", None))
         self.delete_page_menu.setText(QCoreApplication.translate("Menu", u"Remover P\u00e1ginas", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("Menu", u"Editar", None))
         self.pdf_to_word.setText(QCoreApplication.translate("Menu", u"Converter para  Word", None))

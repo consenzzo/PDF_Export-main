@@ -84,107 +84,107 @@
 #             novo_documento.save(novo_caminho)
 
 #     return 'Copia_original.docx'
-import PyPDF2
-import fitz
-import os
-from docx2pdf import convert
-from pdf2docx import Converter
-from docx import Document
+# import PyPDF2
+# import fitz
+# import os
+# from docx2pdf import convert
+# from pdf2docx import Converter
+# from docx import Document
 
-def remove_watermark(input_path, output_path):
-    with open(input_path, 'rb') as file:
-        pdf_reader = PyPDF2.PdfReader(file)
-        pdf_writer = PyPDF2.PdfWriter()
+# def remove_watermark(input_path, output_path):
+#     with open(input_path, 'rb') as file:
+#         pdf_reader = PyPDF2.PdfReader(file)
+#         pdf_writer = PyPDF2.PdfWriter()
 
-        for page_num in range(len(pdf_reader.pages)):
-            page = pdf_reader.pages[page_num]
-            x_objects = page['/Resources']['/XObject'].get_object() if '/XObject' in page['/Resources'] else {}
+#         for page_num in range(len(pdf_reader.pages)):
+#             page = pdf_reader.pages[page_num]
+#             x_objects = page['/Resources']['/XObject'].get_object() if '/XObject' in page['/Resources'] else {}
 
-            # Lista para armazenar chaves (nomes) dos objetos a serem removidos
-            objects_to_remove = []
+#             # Lista para armazenar chaves (nomes) dos objetos a serem removidos
+#             objects_to_remove = []
 
-            for obj in x_objects:
-                if x_objects[obj]['/Subtype'] == '/Image':
-                    image_info = x_objects[obj]
+#             for obj in x_objects:
+#                 if x_objects[obj]['/Subtype'] == '/Image':
+#                     image_info = x_objects[obj]
 
-                    # Verificar se o filtro é ['/ASCII85Decode', '/FlateDecode']
-                    filters = x_objects[obj]['/Filter'] if '/Filter' in x_objects[obj] else []
-                    has_correct_filter = filters == ['/ASCII85Decode', '/FlateDecode']
+#                     # Verificar se o filtro é ['/ASCII85Decode', '/FlateDecode']
+#                     filters = x_objects[obj]['/Filter'] if '/Filter' in x_objects[obj] else []
+#                     has_correct_filter = filters == ['/ASCII85Decode', '/FlateDecode']
 
-                    # Verificar se a máscara de transparência está presente e é indireta
-                    has_smask = '/SMask' in x_objects[obj]
-                    smask_is_indirect = isinstance(x_objects[obj].get('/SMask'), PyPDF2.generic.IndirectObject)
+#                     # Verificar se a máscara de transparência está presente e é indireta
+#                     has_smask = '/SMask' in x_objects[obj]
+#                     smask_is_indirect = isinstance(x_objects[obj].get('/SMask'), PyPDF2.generic.IndirectObject)
 
-                    if has_correct_filter and (not has_smask or (has_smask and smask_is_indirect)):
-                        print(f"Page {page_num + 1}, Image Object {obj}: {image_info}")
-                        objects_to_remove.append(obj)
+#                     if has_correct_filter and (not has_smask or (has_smask and smask_is_indirect)):
+#                         print(f"Page {page_num + 1}, Image Object {obj}: {image_info}")
+#                         objects_to_remove.append(obj)
 
-            # Remover objetos XObject da página
-            for obj_key in objects_to_remove:
-                page['/Resources']['/XObject'].pop(obj_key)
+#             # Remover objetos XObject da página
+#             for obj_key in objects_to_remove:
+#                 page['/Resources']['/XObject'].pop(obj_key)
 
-            pdf_writer.add_page(page)
+#             pdf_writer.add_page(page)
 
-        with open(output_path, 'wb') as output_file:
-            pdf_writer.write(output_file)
+#         with open(output_path, 'wb') as output_file:
+#             pdf_writer.write(output_file)
 
 
-def word_to_pdf(word_file, local_save_pg):
-    pdf_file = os.path.join(os.path.dirname(local_save_pg), f"{os.path.splitext(os.path.basename(local_save_pg))[0]}.pdf")
-    print(pdf_file)
-    convert(word_file, pdf_file)
+# def word_to_pdf(word_file, local_save_pg):
+#     pdf_file = os.path.join(os.path.dirname(local_save_pg), f"{os.path.splitext(os.path.basename(local_save_pg))[0]}.pdf")
+#     print(pdf_file)
+#     convert(word_file, pdf_file)
 
-def pdf_to_word(pdf_file, local_save_pg):
-    cv = Converter(pdf_file)
-    docx_file = os.path.join(os.path.dirname(local_save_pg), f"{os.path.splitext(os.path.basename(local_save_pg))[0]}.docx")
-    print(docx_file)
-    cv.convert(docx_file, start=0, end=None)
-    cv.close()
+# def pdf_to_word(pdf_file, local_save_pg):
+#     cv = Converter(pdf_file)
+#     docx_file = os.path.join(os.path.dirname(local_save_pg), f"{os.path.splitext(os.path.basename(local_save_pg))[0]}.docx")
+#     print(docx_file)
+#     cv.convert(docx_file, start=0, end=None)
+#     cv.close()
 
-output_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\pdf_opacity_temp_AGUA.pdf"
-pdf_file = r"C:\Users\gusta\OneDrive\Área de Trabalho\pdf_opacity_temp.pdf"
-word_file = r"C:\Users\gusta\OneDrive\Área de Trabalho\pdf_opacity_temp_AGUA_word.docx"
-new_pdf = r"C:\Users\gusta\OneDrive\Área de Trabalho\pdf_opacity_temp_AGUA_NEW.pdf"
-remove_watermark(pdf_file, output_path)
-pdf_to_word(output_path,word_file)
-word_to_pdf(word_file,new_pdf)
-def remove_watermark(input_pdf, output_pdf):
-    # Abrir o documento PDF
-    doc = fitz.open(input_pdf)
+# output_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\pdf_opacity_temp_AGUA.pdf"
+# pdf_file = r"C:\Users\gusta\OneDrive\Área de Trabalho\pdf_opacity_temp.pdf"
+# word_file = r"C:\Users\gusta\OneDrive\Área de Trabalho\pdf_opacity_temp_AGUA_word.docx"
+# new_pdf = r"C:\Users\gusta\OneDrive\Área de Trabalho\pdf_opacity_temp_AGUA_NEW.pdf"
+# remove_watermark(pdf_file, output_path)
+# pdf_to_word(output_path,word_file)
+# word_to_pdf(word_file,new_pdf)
+# def remove_watermark(input_pdf, output_pdf):
+#     # Abrir o documento PDF
+#     doc = fitz.open(input_pdf)
 
-    # Iterar sobre as páginas do PDF
-    for page_number in range(doc.page_count):
-        page = doc[page_number]
+#     # Iterar sobre as páginas do PDF
+#     for page_number in range(doc.page_count):
+#         page = doc[page_number]
 
-        # Padronizar os objetos da página /Contents
-        page.clean_contents()
+#         # Padronizar os objetos da página /Contents
+#         page.clean_contents()
 
-        # Obter o xref do objeto /Contents resultante após a padronização
-        xref = page.get_contents()[0]
+#         # Obter o xref do objeto /Contents resultante após a padronização
+#         xref = page.get_contents()[0]
         
-        # Ler o conteúdo fonte como um bytearray (objeto de array de bytes modificável)
-        cont = bytearray(page.read_contents())
-        print(cont)
+#         # Ler o conteúdo fonte como um bytearray (objeto de array de bytes modificável)
+#         cont = bytearray(page.read_contents())
+#         print(cont)
 
-        # Confirmar a presença de uma marca d'água do tipo "marked-content watermark"
-        if cont.find(b"/Subtype/Watermark") > 0:
-            print(f"Marca d'água encontrada na página {page_number + 1}")
+#         # Confirmar a presença de uma marca d'água do tipo "marked-content watermark"
+#         if cont.find(b"/Subtype/Watermark") > 0:
+#             print(f"Marca d'água encontrada na página {page_number + 1}")
 
-            # Loop para remover todas as ocorrências de marcas d'água
-            while True:
-                i1 = cont.find(b"/Artifact")  # Encontrar o início da definição da marca d'água
-                if i1 < 0:
-                    break  # Se não encontrar mais ocorrências, encerrar o loop
+#             # Loop para remover todas as ocorrências de marcas d'água
+#             while True:
+#                 i1 = cont.find(b"/Artifact")  # Encontrar o início da definição da marca d'água
+#                 if i1 < 0:
+#                     break  # Se não encontrar mais ocorrências, encerrar o loop
 
-                i2 = cont.find(b"EMC", i1)  # Encontrar o final da definição da marca d'água
-                cont[i1 - 2 : i2 + 3] = b""  # Remover a definição completa da marca d'água ("q ... EMC")
+#                 i2 = cont.find(b"EMC", i1)  # Encontrar o final da definição da marca d'água
+#                 cont[i1 - 2 : i2 + 3] = b""  # Remover a definição completa da marca d'água ("q ... EMC")
 
-            # Atualizar o stream com o conteúdo modificado
-            doc.update_stream(xref, cont)
+#             # Atualizar o stream com o conteúdo modificado
+#             doc.update_stream(xref, cont)
 
-    # Salvar o documento resultante em um novo arquivo
-    doc.save(output_pdf)
-    doc.close()
+#     # Salvar o documento resultante em um novo arquivo
+#     doc.save(output_pdf)
+#     doc.close()
 
 # # Exemplo de uso
 # input_pdf_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\PADRONIZAÇÃO - Copia.pdf"
@@ -578,3 +578,268 @@ def remove_watermark(input_pdf, output_pdf):
 
 # # Cria um novo PDF a partir do código
 # criar_pdf_a_partir_do_codigo(codigo_path, novo_pdf_path)
+
+# import PyPDF2
+
+# def adicionar_rodape(pdf_path, output_path):
+#     with open(pdf_path, 'rb') as file:
+#         pdf_reader = PyPDF2.PdfReader(file)
+#         pdf_writer = PyPDF2.PdfWriter()
+
+#         for page_num in range(len(pdf_reader.pages)):
+#             page = pdf_reader.pages[page_num]
+#             page.merge_page(create_rodape(page, page_num + 1))  # Correção: passe a página como parâmetro
+#             pdf_writer.add_page(page)
+
+#         with open(output_path, 'wb') as output_file:
+#             pdf_writer.write(output_file)
+
+# def create_rodape(page, numero_pagina):
+#     rodape_texto = f'Página {numero_pagina}'
+#     rodape_page = PyPDF2.PageObject.createBlankPage(width=page.mediabox.width(), height=30)
+#     rodape_page.mergeTranslatedPage(page, 0, 10)  # Ajuste os valores conforme necessário
+
+#     # Adiciona o número da página como texto no rodapé
+#     rodape_page.merge_page(page)
+#     rodape_page.addText(rodape_texto, 10, 5)
+
+#     return rodape_page
+
+# if __name__ == '__main__':
+#     input_pdf = r"C:\Users\gusta\OneDrive\Área de Trabalho\Controle Vergalhão.pdf"
+#     output_pdf = r"C:\Users\gusta\OneDrive\Área de Trabalho\Controle Vergalhão_NUM.pdf"
+#     rodape_texto = '© 2023 Meu Rodapé'
+
+#     adicionar_rodape(input_pdf, output_pdf) 
+
+# from reportlab.pdfgen import canvas
+# from reportlab.lib.pagesizes import letter
+
+# def generate_footer(input_pdf, output_pdf,
+#                     left_text='', middle_text='', right_text=''):
+#     """Generates a pdf containing specified footer"""
+#     width, height = letter
+
+#     can = canvas.Canvas(output_pdf, pagesize=letter)
+
+#     # If you want to add a watermark or content from the original PDF,
+#     # you can use the following line
+#     existing_pdf = canvas.Canvas(input_pdf)
+#     existing_pdf.getPageNumber()  # Get page number or any other content
+#     # ... incorporate the content into the new canvas
+
+#     can.drawString(x=0.075 * width, y=0.03 * height, text=left_text)
+#     can.drawCentredString(x=0.5 * width, y=0.03 * height, text=middle_text)
+#     can.drawRightString(x=0.925 * width, y=0.03 * height, text=right_text)
+
+#     can.save()
+
+# if __name__ == "__main__":
+#     # Exemplo de uso
+#     input_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\Controle Vergalhão.pdf"  # Substitua pelo caminho real do seu PDF de entrada
+#     output_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\Controle Vergalhão_NUM.pdf"
+#     generate_footer(input_path, output_path, "Left", "Center", "Right")
+
+# from PyPDF2 import PdfReader, PdfWriter
+# from reportlab.pdfgen import canvas
+# from reportlab.lib.pagesizes import letter
+# import io
+
+# def add_footer(input_pdf, output_pdf,
+#                left_text='', middle_text='', right_text=''):
+#     """Adds a rotated footer to the input PDF and saves the result to the output PDF"""
+#     input_pdf_reader = PdfReader(input_pdf)
+#     output_pdf_writer = PdfWriter()
+
+#     for page_num in range(len(input_pdf_reader.pages)):
+#         # Create a new canvas for each page
+#         packet = io.BytesIO()
+#         can = canvas.Canvas(packet, pagesize=letter)
+
+#         # Draw the specified footer with adjusted positions based on page rotation
+#         page = input_pdf_reader.pages[page_num]
+#         rotate_value = page.get('/Rotate', 0)
+
+#         if rotate_value in [90, 270]:
+#             # Swap width and height for horizontal pages
+#             width, height = letter
+#             can.rotate(90)
+#             # can.drawString(y=0.075 * width, x=-0.03 * height, text=left_text)
+#             # can.drawCentredString(y=0.5 * width, x=-0.03 * height, text=middle_text)
+#             # can.drawRightString(y=0.925 * width, x=-0.03 * height, text=right_text)
+#             can.drawString(y=-0.95 * width, x=0.03 * height, text=left_text)
+#             can.drawCentredString(y=-0.95 * width, x=0.5 * height, text=middle_text)
+#             can.drawRightString(y=-0.95 * width, x=0.99 * height, text=right_text)
+#         else:
+#             width, height = letter
+#             can.drawString(x=0.075 * width, y=0.03 * height, text=left_text)
+#             can.drawCentredString(x=0.5 * width, y=0.03 * height, text=middle_text)
+#             can.drawRightString(x=0.925 * width, y=0.03 * height, text=right_text)
+
+#         can.save()
+
+#         # Move the packet cursor back to the beginning
+#         packet.seek(0)
+
+#         # Merge the overlayed footer with the existing page
+#         new_page = input_pdf_reader.pages[page_num]
+#         overlay = PdfReader(packet).pages[0]
+#         new_page.merge_page(overlay)
+
+#         # Add the modified page to the output PDF
+#         output_pdf_writer.add_page(new_page)
+
+#     # Save the modified PDF to the output file
+#     with open(output_pdf, 'wb') as output_file:
+#         output_pdf_writer.write(output_file)
+# def add_footer(input_pdf, output_pdf,
+#                left_text='', middle_text='', right_text=''):
+#     """Adds a rotated footer to the input PDF and saves the result to the output PDF"""
+#     input_pdf_reader = PdfReader(input_pdf)
+#     output_pdf_writer = PdfWriter()
+
+#     for page_num in range(len(input_pdf_reader.pages)):
+#         # Create a new canvas for each page
+#         packet = io.BytesIO()
+#         can = canvas.Canvas(packet, pagesize=letter)
+
+#         # Draw the specified footer with adjusted positions based on page rotation
+#         page = input_pdf_reader.pages[page_num]
+#         rotate_value = page.get('/Rotate', 0)
+
+#         if rotate_value in [90, 270]:
+#             # Swap width and height for horizontal pages
+#             width, height = letter
+#             can.drawString(y=0.075 * width, x=0.7 * height, text=left_text)
+#             can.drawCentredString(y=0.5 * width, x=0.03 * height, text=middle_text)
+#             can.drawRightString(y=0.925 * width, x=0.03 * height, text=right_text)
+#         else:
+#             width, height = letter
+#             can.drawString(x=0.075 * width, y=0.03 * height, text=left_text)
+#             can.drawCentredString(x=0.5 * width, y=0.03 * height, text=middle_text)
+#             can.drawRightString(x=0.925 * width, y=0.03 * height, text=right_text)
+
+#         can.save()
+
+#         # Move the packet cursor back to the beginning
+#         packet.seek(0)
+
+#         # Merge the overlayed footer with the existing page
+#         new_page = input_pdf_reader.pages[page_num]
+#         overlay = PdfReader(packet).pages[0]
+#         new_page.merge_page(overlay)
+
+#         # Add the modified page to the output PDF
+#         output_pdf_writer.add_page(new_page)
+
+#     # Save the modified PDF to the output file
+#     with open(output_pdf, 'wb') as output_file:
+#         output_pdf_writer.write(output_file)
+
+
+# if __name__ == "__main__":
+#     # Exemplo de uso
+#     input_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\Controle Vergalhão.pdf"  # Substitua pelo caminho real do seu PDF de entrada
+#     output_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\Controle Vergalhão_NUM.pdf"
+#     add_footer(input_path, output_path, "Left", "Center", "Right")
+#     # get_page_orientation(input_path)
+# import fitz  # PyMuPDF
+# import re
+# def extrair_numeros_pagina(pdf_path):
+#     doc = fitz.open(pdf_path)
+
+#     for pagina_num in range(doc.page_count):
+#         pagina = doc[pagina_num]
+#         texto = pagina.get_text()
+
+#         # Obtém a altura da página
+#         altura_pagina = pagina.rect.height
+#         coordenada_inicial_vertical = altura_pagina - 100
+
+#         # Define a área de interesse na página (horizontal completa, vertical de coordenada_inicial_vertical até o final)
+#         area_interesse = fitz.Rect(0, coordenada_inicial_vertical, pagina.rect.width, altura_pagina)
+
+#         # Obtém o texto apenas da área de interesse
+#         texto_area_interesse = pagina.get_text("text", clip=area_interesse)
+
+#         # Verifica se há um número sem nenhum outro texto na área de interesse
+#         numeros_simples = [token for token in texto_area_interesse.split() if token.isdigit()]
+#         if numeros_simples:
+#             print(f"Números simples na página {pagina_num + 1}: {', '.join(numeros_simples)}")
+
+#     #     # Verifica se há números junto com palavras-chave na área de interesse
+#     #     palavras_chave = ["de", "até", "pag", "pág", "página", "pagina", "Pag", "Pág", "Página", "Pagina", "De", "Até", "de ate", "De Ate", "Páginas", "Paginas", "páginas", "paginas"]
+#     #     numeros_com_palavras = [token for token in texto_area_interesse.split() if token.isdigit() or token.lower() in palavras_chave]
+#     #     if numeros_com_palavras:
+#     #         print(f"Números com palavras-chave na página {pagina_num + 1}: {', '.join(numeros_com_palavras)}")
+
+#     # doc.close()
+#         # Verifica se há números junto com palavras-chave na área de interesse
+#         palavras_chave = ["de", "até", "pag", "pág", "página", "pagina", "Pag", "Pág", "Página", "Pagina", "De", "Até", "de ate", "De Ate", "Páginas", "Paginas", "páginas", "paginas"]
+#         padrao_palavras_chave = re.compile(r'\b(?:' + '|'.join(palavras_chave) + r')\b', re.IGNORECASE)
+#         numeros_com_palavras = [token for token in texto_area_interesse.split() if token.isdigit() or padrao_palavras_chave.match(token)]
+#         if numeros_com_palavras:
+#             print(f"Números com palavras-chave na página {pagina_num + 1}: {', '.join(numeros_com_palavras)}")
+
+#     doc.close()
+
+# # Substitua 'seu_arquivo.pdf' pelo caminho do seu arquivo PDF
+# teste = r"C:\Users\gusta\OneDrive\Área de Trabalho\temp_n_page_pdf_exporttemp_new_file.pdf"
+# extrair_numeros_pagina(teste)
+import fitz  # PyMuPDF
+import re
+
+def extrair_numeros_pagina(pdf_path):
+    doc = fitz.open(pdf_path)
+
+    for pagina_num in range(doc.page_count):
+        pagina = doc[pagina_num]
+        texto = pagina.get_text()
+
+        # Obtém a altura da página
+        altura_pagina = pagina.rect.height
+        coordenada_inicial_vertical = altura_pagina - 50
+
+        # Define a área de interesse na página (horizontal completa, vertical de coordenada_inicial_vertical até o final)
+        area_interesse = fitz.Rect(0, coordenada_inicial_vertical, pagina.rect.width, altura_pagina)
+
+        # Obtém o texto apenas da área de interesse
+        texto_area_interesse = pagina.get_text("text", clip=area_interesse)
+
+        # Verifica se há um número sem nenhum outro texto na área de interesse
+        numeros_simples = [token for token in texto_area_interesse.split() if token.isdigit()]
+        if numeros_simples:
+            print(f"Números simples na página {pagina_num + 1}: {', '.join(numeros_simples)}")
+
+            # Define a cor do texto como branca
+            for rect in pagina.search_for(*numeros_simples):
+                if rect.y0 >= coordenada_inicial_vertical:
+                    pagina.draw_rect(rect, color=(1, 1, 1), fill=(1, 1, 1))
+
+        # Verifica se há números junto com palavras-chave na área de interesse
+        palavras_chave = ["de", "até", "pag", "pág", "página", "pagina", "Pag", "Pág", "Página", "Pagina", "De", "Até", "de ate", "De Ate", "Páginas", "Paginas", "páginas", "paginas"]
+        padrao_palavras_chave = re.compile(r'\b(?:' + '|'.join(palavras_chave) + r')\b', re.IGNORECASE)
+        for token in texto_area_interesse.split():
+            if token.isdigit():
+                print(f"Números com palavras-chave na página {pagina_num + 1}: {token}")
+
+                # Define a cor do texto como branca
+                for rect in pagina.search_for(token):
+                    if rect.y0 >= coordenada_inicial_vertical:
+                        pagina.draw_rect(rect, color=(1, 1, 1), fill=(1, 1, 1))
+
+            elif padrao_palavras_chave.match(token):
+                print(f"Palavras-chave na página {pagina_num + 1}: {token}")
+
+                # Define a cor do texto como branca
+                for rect in pagina.search_for(token):
+                    if rect.y0 >= coordenada_inicial_vertical:
+                        pagina.draw_rect(rect, color=(1, 1, 1), fill=(1, 1, 1))
+
+    doc.save("output.pdf")  # Salva o PDF modificado
+    doc.close()
+
+
+# Substitua 'seu_arquivo.pdf' pelo caminho do seu arquivo PDF
+teste = r"C:\Users\gusta\OneDrive\Área de Trabalho\temp_n_page_pdf_exporttemp_new_file.pdf"
+extrair_numeros_pagina(teste)

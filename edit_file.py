@@ -19,7 +19,9 @@ from reportlab.pdfgen import canvas
 from PyPDF2 import PdfMerger, PdfReader, PdfWriter, generic
 from reportlab.lib.colors import Color  # Adicionado para lidar com cores e transparência
 import shutil
-
+import io
+from reportlab.lib.pagesizes import letter
+import re
 
 def delete_selected_page(self:Ui_Menu):
     selected_row = self.listWidget.currentRow()
@@ -47,6 +49,8 @@ def delete_selected_page(self:Ui_Menu):
             for page, data in self.icon_dict.items():
                 if int(data["atual"]) > selected_row + 1:
                     data["atual"] = str(int(data["atual"]) - 1)
+                    if data["atual"] == 0:
+                        print('PAROOOOOU')
 
             total_page = len(self.icon_dict)
             self.n_pg_total.setText(f'/ {total_page}')
@@ -142,6 +146,8 @@ def move_page_down(self:Ui_Menu):
 
 
 def move_page(self:Ui_Menu, initial_position, final_position):
+    if final_position == 0:
+        final_position = self.listWidget.count()
 
     if initial_position != final_position:
         for page, data in self.icon_dict.items():
@@ -157,6 +163,14 @@ def move_page(self:Ui_Menu, initial_position, final_position):
                     data["atual"] = str(current_position + 1)
 
         sort_list_widget(self, final_position)
+    # for page, data_item in self.icon_dict.items():
+    #     print(f'{page} :  {data_item["atual"]}')
+    #     if data_item["atual"] == 0:
+    #         print('paroooou')
+    # print('********************************************')
+
+
+        
 
 def sort_list_widget(self:Ui_Menu, final_position):
     # Limpe a listWidget
@@ -174,6 +188,7 @@ def sort_list_widget(self:Ui_Menu, final_position):
         list_item.setSizeHint(QSize(pixmap.size()))  # Defina o tamanho desejado
         self.listWidget.addItem(list_item)
     self.listWidget.setCurrentRow(final_position-1)
+    
 
 @Slot(int, int)
 def on_dropped(self:Ui_Menu, initial, final):
@@ -215,8 +230,8 @@ def add_watermark(self: Ui_Menu):
         except:
             pass
         new_pdf = pdf_to_base64('pdf_opacity_temp.pdf',0)
-        self.icon_dict[int(item_data["atual"])]["base64_pdf"] = new_pdf
-
+        # self.icon_dict[int(item_data["atual"])]["base64_pdf"] = new_pdf
+        item_data["base64_pdf"] = new_pdf
         # Salva as alterações no novo arquivo PDF
         pdf_document = fitz.open('pdf_opacity_temp.pdf')
         new_page = pdf_document.load_page(0)
@@ -226,8 +241,8 @@ def add_watermark(self: Ui_Menu):
         # Fecha o arquivo PDF
         pdf_document.close()
 
-        self.icon_dict[int(item_data["atual"])]["icon_bytes"] = img_bytes
-        
+        # self.icon_dict[int(item_data["atual"])]["icon_bytes"] = img_bytes
+        item_data["icon_bytes"] = img_bytes
         # Atualize diretamente o ícone do item atual na QListWidget
         pixmap = QPixmap()
         pixmap.loadFromData(img_bytes)
@@ -405,8 +420,10 @@ def remove_watermark(self: Ui_Menu):
             new_pdf = 'temp_output_export_water.pdf'
 
         base64_new_pdf = pdf_to_base64(new_pdf,0)
-        self.icon_dict[int(item_data["atual"])]["watermark_base64_pdf"] = None
-        self.icon_dict[int(item_data["atual"])]["base64_pdf"] = base64_new_pdf
+        item_data["watermark_base64_pdf"] = None
+        item_data["base64_pdf"] = base64_new_pdf
+        # self.icon_dict[int(item_data["atual"])]["watermark_base64_pdf"] = None
+        # self.icon_dict[int(item_data["atual"])]["base64_pdf"] = base64_new_pdf
 
         # Salva as alterações no novo arquivo PDF
         pdf_document = fitz.open(new_pdf)
@@ -417,8 +434,8 @@ def remove_watermark(self: Ui_Menu):
         # Fecha o arquivo PDF
         pdf_document.close()
 
-        self.icon_dict[int(item_data["atual"])]["icon_bytes"] = img_bytes
-        
+        # self.icon_dict[int(item_data["atual"])]["icon_bytes"] = img_bytes
+        item_data["icon_bytes"] = img_bytes
         # Atualize diretamente o ícone do item atual na QListWidget
         pixmap = QPixmap()
         pixmap.loadFromData(img_bytes)
@@ -527,3 +544,214 @@ def remove_watermark_type01(input_pdf, output_pdf):
             return is_watermark
     return is_watermark
     
+
+def add_footer(self: Ui_Menu):
+    for item_data in self.icon_dict.values():
+        self.listWidget.setCurrentRow(int(item_data["atual"]) - 1)
+        current_item = self.listWidget.currentItem()
+        pdf_file = base64_to_pdf(item_data["base64_pdf"],'temp_n_page_pdf_export.pdf')
+        add_footer_n_page(pdf_file,pdf_file,right_text=item_data["atual"])
+        base64_new_pdf = pdf_to_base64(pdf_file,0)
+        item_data["base64_pdf"] = base64_new_pdf
+        # self.icon_dict[int(item_data["atual"])]["base64_pdf"] = base64_new_pdf
+
+
+        # Salva as alterações no novo arquivo PDF
+        pdf_document = fitz.open(pdf_file)
+        new_page = pdf_document.load_page(0)
+        img_bytes = new_page.get_pixmap()
+        img_bytes = img_bytes.tobytes()
+
+        # Fecha o arquivo PDF
+        pdf_document.close()
+
+        # self.icon_dict[int(item_data["atual"])]["icon_bytes"] = img_bytes
+        item_data["icon_bytes"] = img_bytes
+        # Atualize diretamente o ícone do item atual na QListWidget
+        pixmap = QPixmap()
+        pixmap.loadFromData(img_bytes)
+        pixmap = pixmap.scaledToHeight(200, Qt.SmoothTransformation)
+        
+        current_item.setIcon(QIcon(pixmap))
+        current_item.setSizeHint(QSize(pixmap.size()))
+        try:
+            os.remove('temp_output_export_water.pdf')
+        except:
+            pass
+        os.remove(pdf_file)
+        display_image(self)
+
+
+
+
+
+def add_footer_n_page(input_pdf, output_pdf,
+               left_text='', middle_text='', right_text=''):
+    """Adds a rotated footer to the input PDF and saves the result to the output PDF"""
+    input_pdf_reader = PdfReader(input_pdf)
+    output_pdf_writer = PdfWriter()
+
+    for page_num in range(len(input_pdf_reader.pages)):
+        # Create a new canvas for each page
+        packet = io.BytesIO()
+        input_page = input_pdf_reader.pages[page_num]
+        width, height = input_page.mediabox.upper_right
+        can = canvas.Canvas(packet, pagesize=(width, height))
+
+        # Draw the specified footer with adjusted positions based on page rotation
+        page = input_pdf_reader.pages[page_num]
+        rotate_value = page.get('/Rotate', 0)
+        input_page = input_pdf_reader.pages[page_num]
+        width, height = input_page.mediabox.upper_right
+        width, height = float(width), float(height)
+
+        if rotate_value in [90, 270]:
+            # Swap width and height for horizontal pages
+            # width, height = letter
+            can.rotate(90)
+            # can.drawString(y=0.075 * width, x=-0.03 * height, text=left_text)
+            # can.drawCentredString(y=0.5 * width, x=-0.03 * height, text=middle_text)
+            # can.drawRightString(y=0.925 * width, x=-0.03 * height, text=right_text)
+            can.drawString(y=-0.95 * width, x=0.03 * height, text=left_text)
+            can.drawCentredString(y=-0.95 * width, x=0.5 * height, text=middle_text)
+            can.drawRightString(y=-0.95 * width, x=0.99 * height, text=right_text)
+        else:
+            # width, height = letter
+            can.drawString(x=0.075 * width, y=0.03 * height, text=left_text)
+            can.drawCentredString(x=0.5 * width, y=0.03 * height, text=middle_text)
+            can.drawRightString(x=0.95 * width, y=0.03 * height, text=right_text)
+
+        can.save()
+
+        # Move the packet cursor back to the beginning
+        packet.seek(0)
+
+        # Merge the overlayed footer with the existing page
+        new_page = input_pdf_reader.pages[page_num]
+        overlay = PdfReader(packet).pages[0]
+        new_page.merge_page(overlay)
+
+        # Add the modified page to the output PDF
+        output_pdf_writer.add_page(new_page)
+
+    # Save the modified PDF to the output file
+    with open(output_pdf, 'wb') as output_file:
+        output_pdf_writer.write(output_file)
+
+def remove_n_page(self:Ui_Menu):
+    for item_data in self.icon_dict.values():
+        self.listWidget.setCurrentRow(int(item_data["atual"]) - 1)
+        current_item = self.listWidget.currentItem()
+        pdf_file = base64_to_pdf(item_data["base64_pdf"],'temp_n_page_pdf_export.pdf')
+        remove_n_page_footer(pdf_file,'temp_n_page_pdf_export.pdf')
+        base64_new_pdf = pdf_to_base64('temp_n_page_pdf_export.pdf',0)
+        # self.icon_dict[int(item_data["atual"])]["base64_pdf"] = base64_new_pdf
+        item_data["base64_pdf"] = base64_new_pdf
+        # Salva as alterações no novo arquivo PDF
+        pdf_document = fitz.open('temp_n_page_pdf_export.pdf')
+        new_page = pdf_document.load_page(0)
+        img_bytes = new_page.get_pixmap()
+        img_bytes = img_bytes.tobytes()
+
+        # Fecha o arquivo PDF
+        pdf_document.close()
+
+        # self.icon_dict[int(item_data["atual"])]["icon_bytes"] = img_bytes
+        item_data["icon_bytes"] = img_bytes
+        # Atualize diretamente o ícone do item atual na QListWidget
+        pixmap = QPixmap()
+        pixmap.loadFromData(img_bytes)
+        pixmap = pixmap.scaledToHeight(200, Qt.SmoothTransformation)
+        
+        current_item.setIcon(QIcon(pixmap))
+        current_item.setSizeHint(QSize(pixmap.size()))
+        try:
+            os.remove('temp_output_export_water.pdf')
+        except:
+            pass
+        os.remove(pdf_file)
+        os.remove('temp_n_page_pdf_export.pdf')
+        display_image(self)
+
+
+
+
+
+
+
+def remove_n_page_footer(pdf_path,output):
+    doc = fitz.open(pdf_path)
+
+    for pagina_num in range(doc.page_count):
+        pagina = doc[pagina_num]
+        input_pdf_reader = PdfReader(pdf_path)
+        page = input_pdf_reader.pages[0]
+        rotation = page.get('/Rotate', 0)
+        # Verifica a rotação da página
+        # rotation = pagina.get_rotation()
+        
+        if rotation == 0:  # Página na orientação padrão
+            altura_pagina = pagina.rect.height
+        elif rotation == 90:  # Página rotacionada 90 graus
+            altura_pagina = pagina.rect.width
+        else:
+            # Você pode lidar com outras rotações, se necessário
+            altura_pagina = pagina.rect.height
+
+        coordenada_inicial_vertical = altura_pagina - 50
+
+        # Define a área de interesse na página
+        if rotation == 0:
+            area_interesse = fitz.Rect(0, coordenada_inicial_vertical, pagina.rect.width, altura_pagina)
+        elif rotation == 90:
+            area_interesse = fitz.Rect(pagina.rect.height - 50, 0 , pagina.rect.height, altura_pagina)
+            coordenada_inicial_vertical = pagina.rect.height - 50
+        # Obtém o texto apenas da área de interesse
+        texto_area_interesse = pagina.get_text("text", clip=area_interesse)
+        # print(texto_area_interesse)
+        
+
+        # Verifica se há um número sem nenhum outro texto na área de interesse
+        numeros_simples = [token for token in texto_area_interesse.split() if token.isdigit()]
+        if numeros_simples:
+            for token in numeros_simples:
+                rect = pagina.search_for(token)
+                if rotation == 90:
+                    if rect:
+                        max_x0 = max(rect, key=lambda r: r.x0)
+                    if rect and coordenada_inicial_vertical <= rect[0].x0 <= altura_pagina:
+                        pagina.draw_rect(rect[0], color=(1, 1, 1), fill=(1, 1, 1))
+                        
+                    else:
+                        if coordenada_inicial_vertical - 50 <= max_x0.x0:
+                            
+                            pagina.draw_rect(max_x0, color=(1, 1, 1), fill=(1, 1, 1))
+                    
+                else:
+                    if rect and coordenada_inicial_vertical <= rect[0].y0 <= altura_pagina:
+                        pagina.draw_rect(rect[0], color=(1, 1, 1), fill=(1, 1, 1))
+
+        # Verifica se há números junto com palavras-chave na área de interesse
+        palavras_chave = ["de", "até", "pag", "pág", "página", "pagina", "Pag", "Pág", "Página", "Pagina", "De", "Até", "de ate", "De Ate", "Páginas", "Paginas", "páginas", "paginas"]
+        padrao_palavras_chave = re.compile(r'\b(?:' + '|'.join(palavras_chave) + r')\b', re.IGNORECASE)
+        for token in texto_area_interesse.split():
+            if token.isdigit():
+                for rect in pagina.search_for(token):
+                    if rotation == 90:
+                        if coordenada_inicial_vertical <= rect.x0 <= altura_pagina:
+                            pagina.draw_rect(rect, color=(1, 1, 1), fill=(1, 1, 1))
+                    else:
+                        if coordenada_inicial_vertical <= rect.y0 <= altura_pagina:
+                            pagina.draw_rect(rect, color=(1, 1, 1), fill=(1, 1, 1))
+
+            elif padrao_palavras_chave.match(token):
+                for rect in pagina.search_for(token):
+                    if rotation == 90:
+                        if coordenada_inicial_vertical <= rect.x0 <= altura_pagina:
+                            pagina.draw_rect(rect, color=(1, 1, 1), fill=(1, 1, 1))
+                    else:
+                        if coordenada_inicial_vertical <= rect.y0 <= altura_pagina:
+                            pagina.draw_rect(rect, color=(1, 1, 1), fill=(1, 1, 1))
+
+    doc.save(output)  # Salva o PDF modificado
+    doc.close()

@@ -5,10 +5,10 @@ from PySide6.QtWidgets import QWidget, QApplication, QPushButton
 from PySide6.QtGui import QPixmap, QIcon, QMouseEvent
 from icon_button import icon_button
 from add_file import add_pages
-from display import display_image
-from edit_file import delete_selected_page, rotate_image_r, rotate_image_l, move_page_up, move_page_down, on_dropped, add_watermark,remove_watermark
+from display import display_image, close_file
+from edit_file import delete_selected_page, rotate_image_r, rotate_image_l, move_page_up, move_page_down, on_dropped, add_watermark,remove_watermark,add_footer,remove_n_page
 from navigation import next_page, back_page, go_to_page, zoom_in, zoom_out, zoom_slider_changed
-
+from save_file import save_file_pdf
 
 
 class MyWidget(QWidget, Ui_Menu):
@@ -42,8 +42,8 @@ class MyWidget(QWidget, Ui_Menu):
         self.up_pg.clicked.connect(lambda: move_page_up(self))
         self.down_pg.clicked.connect(lambda: move_page_down(self))
         self.listWidget.dropped.connect(lambda initial, final: on_dropped(self, initial, final))
-        # self.save_file.clicked.connect(lambda: save_file(self,"save_file"))
-        # self.close_file.clicked.connect(lambda: close_file(self,"close_file"))
+        self.save_file.clicked.connect(lambda: save_file_pdf(self))
+        self.close_file.clicked.connect(lambda: close_file(self))
         self.rotate_rigth.clicked.connect(lambda: rotate_image_r(self))
         self.rotate_left.clicked.connect(lambda: rotate_image_l(self))
         self.zoom_in.clicked.connect(lambda: zoom_in(self))
@@ -54,6 +54,8 @@ class MyWidget(QWidget, Ui_Menu):
         self.add_new_file.clicked.connect(lambda: add_pages(self))
         self.add_m_d_agua.clicked.connect(lambda: add_watermark(self))
         self.delete_m_d_agua.clicked.connect(lambda: remove_watermark(self))
+        self.add_n_pg.clicked.connect(lambda: add_footer(self))
+        self.delete_n_pg.clicked.connect(lambda: remove_n_page(self))
 
 
 
