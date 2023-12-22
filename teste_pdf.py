@@ -786,60 +786,292 @@
 # # Substitua 'seu_arquivo.pdf' pelo caminho do seu arquivo PDF
 # teste = r"C:\Users\gusta\OneDrive\Área de Trabalho\temp_n_page_pdf_exporttemp_new_file.pdf"
 # extrair_numeros_pagina(teste)
-import fitz  # PyMuPDF
-import re
+# import fitz  # PyMuPDF
+# import re
 
-def extrair_numeros_pagina(pdf_path):
-    doc = fitz.open(pdf_path)
+# def extrair_numeros_pagina(pdf_path):
+#     doc = fitz.open(pdf_path)
 
-    for pagina_num in range(doc.page_count):
-        pagina = doc[pagina_num]
-        texto = pagina.get_text()
+#     for pagina_num in range(doc.page_count):
+#         pagina = doc[pagina_num]
+#         texto = pagina.get_text()
 
-        # Obtém a altura da página
-        altura_pagina = pagina.rect.height
-        coordenada_inicial_vertical = altura_pagina - 50
+#         # Obtém a altura da página
+#         altura_pagina = pagina.rect.height
+#         coordenada_inicial_vertical = altura_pagina - 50
 
-        # Define a área de interesse na página (horizontal completa, vertical de coordenada_inicial_vertical até o final)
-        area_interesse = fitz.Rect(0, coordenada_inicial_vertical, pagina.rect.width, altura_pagina)
+#         # Define a área de interesse na página (horizontal completa, vertical de coordenada_inicial_vertical até o final)
+#         area_interesse = fitz.Rect(0, coordenada_inicial_vertical, pagina.rect.width, altura_pagina)
 
-        # Obtém o texto apenas da área de interesse
-        texto_area_interesse = pagina.get_text("text", clip=area_interesse)
+#         # Obtém o texto apenas da área de interesse
+#         texto_area_interesse = pagina.get_text("text", clip=area_interesse)
 
-        # Verifica se há um número sem nenhum outro texto na área de interesse
-        numeros_simples = [token for token in texto_area_interesse.split() if token.isdigit()]
-        if numeros_simples:
-            print(f"Números simples na página {pagina_num + 1}: {', '.join(numeros_simples)}")
+#         # Verifica se há um número sem nenhum outro texto na área de interesse
+#         numeros_simples = [token for token in texto_area_interesse.split() if token.isdigit()]
+#         if numeros_simples:
+#             print(f"Números simples na página {pagina_num + 1}: {', '.join(numeros_simples)}")
 
-            # Define a cor do texto como branca
-            for rect in pagina.search_for(*numeros_simples):
-                if rect.y0 >= coordenada_inicial_vertical:
-                    pagina.draw_rect(rect, color=(1, 1, 1), fill=(1, 1, 1))
+#             # Define a cor do texto como branca
+#             for rect in pagina.search_for(*numeros_simples):
+#                 if rect.y0 >= coordenada_inicial_vertical:
+#                     pagina.draw_rect(rect, color=(1, 1, 1), fill=(1, 1, 1))
 
-        # Verifica se há números junto com palavras-chave na área de interesse
-        palavras_chave = ["de", "até", "pag", "pág", "página", "pagina", "Pag", "Pág", "Página", "Pagina", "De", "Até", "de ate", "De Ate", "Páginas", "Paginas", "páginas", "paginas"]
-        padrao_palavras_chave = re.compile(r'\b(?:' + '|'.join(palavras_chave) + r')\b', re.IGNORECASE)
-        for token in texto_area_interesse.split():
-            if token.isdigit():
-                print(f"Números com palavras-chave na página {pagina_num + 1}: {token}")
+#         # Verifica se há números junto com palavras-chave na área de interesse
+#         palavras_chave = ["de", "até", "pag", "pág", "página", "pagina", "Pag", "Pág", "Página", "Pagina", "De", "Até", "de ate", "De Ate", "Páginas", "Paginas", "páginas", "paginas"]
+#         padrao_palavras_chave = re.compile(r'\b(?:' + '|'.join(palavras_chave) + r')\b', re.IGNORECASE)
+#         for token in texto_area_interesse.split():
+#             if token.isdigit():
+#                 print(f"Números com palavras-chave na página {pagina_num + 1}: {token}")
 
-                # Define a cor do texto como branca
-                for rect in pagina.search_for(token):
-                    if rect.y0 >= coordenada_inicial_vertical:
-                        pagina.draw_rect(rect, color=(1, 1, 1), fill=(1, 1, 1))
+#                 # Define a cor do texto como branca
+#                 for rect in pagina.search_for(token):
+#                     if rect.y0 >= coordenada_inicial_vertical:
+#                         pagina.draw_rect(rect, color=(1, 1, 1), fill=(1, 1, 1))
 
-            elif padrao_palavras_chave.match(token):
-                print(f"Palavras-chave na página {pagina_num + 1}: {token}")
+#             elif padrao_palavras_chave.match(token):
+#                 print(f"Palavras-chave na página {pagina_num + 1}: {token}")
 
-                # Define a cor do texto como branca
-                for rect in pagina.search_for(token):
-                    if rect.y0 >= coordenada_inicial_vertical:
-                        pagina.draw_rect(rect, color=(1, 1, 1), fill=(1, 1, 1))
+#                 # Define a cor do texto como branca
+#                 for rect in pagina.search_for(token):
+#                     if rect.y0 >= coordenada_inicial_vertical:
+#                         pagina.draw_rect(rect, color=(1, 1, 1), fill=(1, 1, 1))
 
-    doc.save("output.pdf")  # Salva o PDF modificado
-    doc.close()
+#     doc.save("output.pdf")  # Salva o PDF modificado
+#     doc.close()
 
 
-# Substitua 'seu_arquivo.pdf' pelo caminho do seu arquivo PDF
-teste = r"C:\Users\gusta\OneDrive\Área de Trabalho\temp_n_page_pdf_exporttemp_new_file.pdf"
-extrair_numeros_pagina(teste)
+# # Substitua 'seu_arquivo.pdf' pelo caminho do seu arquivo PDF
+# teste = r"C:\Users\gusta\OneDrive\Área de Trabalho\temp_n_page_pdf_exporttemp_new_file.pdf"
+# extrair_numeros_pagina(teste)
+#############################################################################################################
+
+# import os
+# from io import StringIO
+# from pdfminer.high_level import extract_text_to_fp
+# from pdfminer.layout import LAParams
+# from bs4 import BeautifulSoup
+# import openpyxl
+# from openpyxl.styles import Font, Alignment, NamedStyle ,Border, Side
+# from openpyxl.utils import get_column_letter
+# output_string = StringIO()
+# from openpyxl import Workbook
+# from openpyxl.styles import NamedStyle
+# from openpyxl.styles.borders import Border
+# from openpyxl.styles import Side
+
+# # Crie o estilo personalizado uma vez
+# workbook = openpyxl.Workbook()
+# custom_style = NamedStyle(name='custom_style')
+
+# def apply_custom_style(cell, style_dict):
+#     # Definir o estilo de borda da célula
+#     border = Border(
+#         left=Side(border_style=style_dict.get('border-left-style', 'none'),
+#                   color=style_dict.get('border-left-color', '000000')),
+#         right=Side(border_style=style_dict.get('border-right-style', 'none'),
+#                    color=style_dict.get('border-right-color', '000000')),
+#         top=Side(border_style=style_dict.get('border-top-style', 'none'),
+#                  color=style_dict.get('border-top-color', '000000')),
+#         bottom=Side(border_style=style_dict.get('border-bottom-style', 'none'),
+#                     color=style_dict.get('border-bottom-color', '000000'))
+#     )
+
+#     cell.border = border
+
+# def convert_pixel_to_characters(pixel_value):
+#     return max(1, int(pixel_value) // 10)
+
+# def pdf_to_excel( pdf_file, local_save_pg):
+#      # Especificar o caminho para o arquivo HTML
+#     html_file = os.path.join(os.path.dirname(local_save_pg), f"{os.path.splitext(os.path.basename(local_save_pg))[0]}.html")
+    
+#     # Abrir o arquivo PDF e extrair o texto para o arquivo HTML
+#     with open(pdf_file, 'rb') as fin:
+#         extract_text_to_fp(fin, output_string, laparams=LAParams(), output_type='html', codec=None)
+    
+#     with open(html_file, 'w', encoding='utf-8') as html_out:
+#         html_out.write(output_string.getvalue())
+
+#     # Ler o arquivo HTML
+#     with open(html_file, "r", encoding="utf-8") as file:
+#         html_content = file.read()
+
+#     # Crie um novo arquivo Excel
+#     docx_file = os.path.join(os.path.dirname(local_save_pg), f"{os.path.splitext(os.path.basename(local_save_pg))[0]}.xlsx")
+#     workbook = openpyxl.Workbook()
+#     sheet = workbook.active
+#     current_row = 1
+#     cell_height = 15  # Altura de cada célula
+
+#     # Analisar o HTML com BeautifulSoup
+#     soup = BeautifulSoup(html_content, 'html.parser')
+
+#     # Encontrar todas as tags <div> com informações de células
+#     divs = soup.find_all('div')
+
+#     for div in divs:
+#         # Extrair o texto
+#         cell_text = div.get_text()
+
+#         # Aplicar o estilo à célula
+#         style = div.get('style', '')
+#         styles = style.split(';')
+#         style_dict = {}
+#         for s in styles:
+#             if ':' in s:
+#                 key, value = s.split(':')
+#                 style_dict[key.strip()] = value.strip()
+
+#         # Calcular as coordenadas da célula com base no estilo
+#         left = float(style_dict.get('left', '0px').replace('px', '').strip() or '0')
+#         top = float(style_dict.get('top', '0px').replace('px', '').strip() or '0')
+
+#         # Calcular a largura da coluna com base no valor width e definir a largura da coluna
+#         cell_width = float(style_dict.get('width', '75px').replace('px', '').strip() or '75')
+#         cell_width_characters = convert_pixel_to_characters(cell_width)
+#         column = int(left // cell_width) + 1
+#         sheet.column_dimensions[get_column_letter(column)].width = cell_width_characters
+
+#         # Verificar se a linha atual já foi preenchida
+#         while current_row < top // cell_height:
+#             current_row += 1
+
+#         # Aplicar o texto na célula apropriada com estilo personalizado
+#         cell = sheet.cell(row=current_row, column=column)
+#         apply_custom_style(cell, style_dict)
+#         cell.value = cell_text
+
+#     # Salvar a planilha Excel
+#     workbook.save('xlsx_file.xlsx')
+#     os.remove(html_file)
+#     print('Planilha criada com sucesso.')
+#     output_string.truncate(0)
+
+# pdf_file = r"C:\Users\gusta\OneDrive\Área de Trabalho\ENTRADA CATODO_page_1.pdf"
+# local_save_pg = r"C:\Users\gusta\OneDrive\Área de Trabalho\teste2_excel.xlsx"
+# pdf_to_excel( pdf_file, local_save_pg)
+#################################################################################
+# from PIL import Image
+# import os
+# import fitz
+# from io import BytesIO
+
+# def converter_png_para_jpeg(pdf_path, output_path):
+#     doc = fitz.open(pdf_path)
+
+#     for pagina_numero in range(doc.page_count):
+#         pagina = doc[pagina_numero]
+#         magem = pagina.get_pixmap()
+#         pixel = magem.irect
+
+#         imagem_pillow = Image.frombytes("RGB", (pixel.x1, pixel.y1), magem.samples)
+
+#         imagem_pillow.save(output_path, "JPEG")
+
+
+
+#         # imagem = pagina.get_pixmap()
+#         # print('abril')
+#         # imagem_pil = Image.frombytes("RGB", [imagem.width, imagem.height], imagem.samples)
+
+# # Exemplo de uso
+# pdf_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\new.pdf"
+# jpeg_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\teste_img\teste_img_jpg\jpeg_page_0.jpeg"
+
+# converter_png_para_jpeg(pdf_path, jpeg_path)
+######################################################################################################
+# import fitz  # PyMuPDF
+
+# def remover_senha_pdf(pdf_path, output_path, senha):
+#     doc = fitz.open(pdf_path)
+
+#     # Autenticar a senha
+#     autenticado = doc.authenticate(senha)
+
+#     if not autenticado:
+#         print("Falha na autenticação. A senha pode ser incorreta.")
+#         return
+
+#     doc_saida = fitz.open()
+
+#     for pagina_numero in range(doc.page_count):
+#         pagina = doc[pagina_numero]
+        
+#         # Criar um novo documento para cada página
+#         novo_doc_pagina = fitz.open()
+#         nova_pagina = novo_doc_pagina.new_page(width=pagina.rect.width, height=pagina.rect.height)
+#         nova_pagina.insert_page(pagina)
+
+#         # Adicionar a nova página ao documento de saída
+#         doc_saida.insert_pdf(novo_doc_pagina)
+
+#     # Salvar o novo documento sem senha
+#     doc_saida.save(output_path)
+#     doc_saida.close()
+
+
+# # Exemplo de uso:
+# pdf_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\tabela-periodicatemp_new_file - Copia.pdf"
+# output_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\tabela-periodicatemp_new_file - safe.pdf"
+# senha = "teste"
+# remover_senha_pdf(pdf_path, output_path, senha)
+# import PyPDF2
+
+
+# def desbloquear_pdf(nome_arquivo_entrada, nome_arquivo_saida, senha):
+#     with open(nome_arquivo_entrada, 'rb') as arquivo_entrada:
+#         leitor = PyPDF2.PdfReader(arquivo_entrada)
+
+#         # Verifica se o PDF está protegido por senha
+#         if leitor.is_encrypted:
+#             # Tenta decifrar o PDF com a senha fornecida
+#             if leitor.decrypt(senha):
+#                 # Cria um escritor de PDF para o novo arquivo
+#                 escritor = PyPDF2.PdfWriter()
+
+#                 # Adiciona todas as páginas ao novo arquivo
+#                 for num_pagina in range(len(leitor.pages)):
+#                     pagina = leitor.pages[num_pagina]
+#                     escritor.add_page(pagina)
+
+#                 # Salva o novo arquivo desbloqueado
+#                 with open(nome_arquivo_saida, 'wb') as arquivo_saida:
+#                     escritor.write(arquivo_saida)
+
+#                 print(f'O PDF foi desbloqueado e salvo em {nome_arquivo_saida}.')
+#             else:
+#                 print('Falha ao desbloquear o PDF. Senha incorreta.')
+#         else:
+#             print('O PDF não está protegido por senha.')
+
+# # Exemplo de uso
+# nome_arquivo_entrada = r"C:\Users\gusta\OneDrive\Área de Trabalho\senha.pdf"
+# nome_arquivo_saida = r"C:\Users\gusta\OneDrive\Área de Trabalho\senha_safe.pdf"
+# senha = 'teste'
+
+# desbloquear_pdf(nome_arquivo_entrada, nome_arquivo_saida, senha)
+
+import PyPDF2
+
+def proteger_pdf(input_path, output_path, senha):
+    with open(input_path, 'rb') as pdf_file:
+        pdf_reader = PyPDF2.PdfReader(pdf_file)
+        pdf_writer = PyPDF2.PdfWriter()
+
+        for page_num in range(len(pdf_reader.pages)):
+            page = pdf_reader.pages[page_num]
+            pdf_writer.add_page(page)
+
+        pdf_writer.encrypt(senha)
+
+        with open(output_path, 'wb') as encrypted_pdf:
+            pdf_writer.write(encrypted_pdf)
+
+if __name__ == "__main__":
+    # Substitua 'input.pdf', 'output.pdf' e 'sua_senha' pelos valores desejados
+    input_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\senha_safe.pdf"
+    output_path = r"C:\Users\gusta\OneDrive\Área de Trabalho\senha_safe_NEW.pdf"
+    senha = 'sua_senha'
+
+    proteger_pdf(input_path, output_path, senha)
+    print(f'O PDF foi protegido com sucesso com a senha: {senha}')

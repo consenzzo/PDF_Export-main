@@ -173,7 +173,7 @@ class Ui_Menu(object):
         self.pdf_to_word.setMaximumSize(QSize(16777215, 50))
         self.pdf_to_word.setCursor(QCursor(Qt.PointingHandCursor))
         self.pdf_to_word.setStyleSheet(u"QCommandLinkButton {font: 11pt \"Segoe UI\"; } QCommandLinkButton:checked {background-color: rgb(0, 166, 237);color: white; }")
-        self.pdf_to_word.setCheckable(True)
+        self.pdf_to_word.setCheckable(False)
 
         self.verticalLayout_4.addWidget(self.pdf_to_word)
 
@@ -185,7 +185,7 @@ class Ui_Menu(object):
         self.pdf_to_excel.setMaximumSize(QSize(16777215, 50))
         self.pdf_to_excel.setCursor(QCursor(Qt.PointingHandCursor))
         self.pdf_to_excel.setStyleSheet(u"QCommandLinkButton {font: 11pt \"Segoe UI\"; } QCommandLinkButton:checked {background-color: rgb(0, 166, 237);color: white; }")
-        self.pdf_to_excel.setCheckable(True)
+        self.pdf_to_excel.setCheckable(False)
 
         self.verticalLayout_4.addWidget(self.pdf_to_excel)
 
@@ -197,7 +197,7 @@ class Ui_Menu(object):
         self.expo_Img_Button_png.setMaximumSize(QSize(16777215, 50))
         self.expo_Img_Button_png.setCursor(QCursor(Qt.PointingHandCursor))
         self.expo_Img_Button_png.setStyleSheet(u"QCommandLinkButton {font: 11pt \"Segoe UI\"; } QCommandLinkButton:checked {background-color: rgb(0, 166, 237);color: white; }")
-        self.expo_Img_Button_png.setCheckable(True)
+        self.expo_Img_Button_png.setCheckable(False)
 
         self.verticalLayout_4.addWidget(self.expo_Img_Button_png)
 
@@ -209,21 +209,21 @@ class Ui_Menu(object):
         self.expo_Img_Button_jpg.setMaximumSize(QSize(16777215, 50))
         self.expo_Img_Button_jpg.setCursor(QCursor(Qt.PointingHandCursor))
         self.expo_Img_Button_jpg.setStyleSheet(u"QCommandLinkButton {font: 11pt \"Segoe UI\"; } QCommandLinkButton:checked {background-color: rgb(0, 166, 237);color: white; }")
-        self.expo_Img_Button_jpg.setCheckable(True)
+        self.expo_Img_Button_jpg.setCheckable(False)
 
         self.verticalLayout_4.addWidget(self.expo_Img_Button_jpg)
 
-        self.word_to_pdf = QCommandLinkButton(self.verticalGroupBox_2)
-        self.word_to_pdf.setObjectName(u"word_to_pdf")
-        sizePolicy1.setHeightForWidth(self.word_to_pdf.sizePolicy().hasHeightForWidth())
-        self.word_to_pdf.setSizePolicy(sizePolicy1)
-        self.word_to_pdf.setMinimumSize(QSize(198, 0))
-        self.word_to_pdf.setMaximumSize(QSize(16777215, 50))
-        self.word_to_pdf.setCursor(QCursor(Qt.PointingHandCursor))
-        self.word_to_pdf.setStyleSheet(u"QCommandLinkButton {font: 11pt \"Segoe UI\"; } QCommandLinkButton:checked {background-color: rgb(0, 166, 237);color: white; }")
-        self.word_to_pdf.setCheckable(True)
+        self.save_to_pdf = QCommandLinkButton(self.verticalGroupBox_2)
+        self.save_to_pdf.setObjectName(u"save_to_pdf")
+        sizePolicy1.setHeightForWidth(self.save_to_pdf.sizePolicy().hasHeightForWidth())
+        self.save_to_pdf.setSizePolicy(sizePolicy1)
+        self.save_to_pdf.setMinimumSize(QSize(198, 0))
+        self.save_to_pdf.setMaximumSize(QSize(16777215, 50))
+        self.save_to_pdf.setCursor(QCursor(Qt.PointingHandCursor))
+        self.save_to_pdf.setStyleSheet(u"QCommandLinkButton {font: 11pt \"Segoe UI\"; } QCommandLinkButton:checked {background-color: rgb(0, 166, 237);color: white; }")
+        self.save_to_pdf.setCheckable(False)
 
-        self.verticalLayout_4.addWidget(self.word_to_pdf)
+        self.verticalLayout_4.addWidget(self.save_to_pdf)
 
         self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
@@ -252,7 +252,7 @@ class Ui_Menu(object):
         self.add_password.setMaximumSize(QSize(16777215, 50))
         self.add_password.setCursor(QCursor(Qt.PointingHandCursor))
         self.add_password.setStyleSheet(u"QCommandLinkButton {font: 11pt \"Segoe UI\"; } QCommandLinkButton:checked {background-color: rgb(0, 166, 237);color: white; }")
-        self.add_password.setCheckable(True)
+        self.add_password.setCheckable(False)
 
         self.verticalLayout_3.addWidget(self.add_password)
 
@@ -264,7 +264,7 @@ class Ui_Menu(object):
         self.remove_password.setMaximumSize(QSize(16777215, 50))
         self.remove_password.setCursor(QCursor(Qt.PointingHandCursor))
         self.remove_password.setStyleSheet(u"QCommandLinkButton {font: 11pt \"Segoe UI\"; } QCommandLinkButton:checked {background-color: rgb(0, 166, 237);color: white; }")
-        self.remove_password.setCheckable(True)
+        self.remove_password.setCheckable(False)
 
         self.verticalLayout_3.addWidget(self.remove_password)
 
@@ -763,8 +763,8 @@ class Ui_Menu(object):
         self.pdf_to_word.setText(QCoreApplication.translate("Menu", u"Converter para  Word", None))
         self.pdf_to_excel.setText(QCoreApplication.translate("Menu", u"Converter para  Excel", None))
         self.expo_Img_Button_png.setText(QCoreApplication.translate("Menu", u"Converter para PNG", None))
-        self.expo_Img_Button_jpg.setText(QCoreApplication.translate("Menu", u"Converter para  JPG", None))
-        self.word_to_pdf.setText(QCoreApplication.translate("Menu", u"Converter para PDF", None))
+        self.expo_Img_Button_jpg.setText(QCoreApplication.translate("Menu", u"Converter para  JPEG", None))
+        self.save_to_pdf.setText(QCoreApplication.translate("Menu", u"Converter para PDF", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_2), QCoreApplication.translate("Menu", u"Converter Arquivo", None))
         self.add_password.setText(QCoreApplication.translate("Menu", u"Proteger PDF", None))
         self.remove_password.setText(QCoreApplication.translate("Menu", u"Desbloquear PDF", None))

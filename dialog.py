@@ -43,3 +43,24 @@ def search_watermark(self:Ui_Menu):
     except Exception as e:
         print(f"Erro ao selecionar a imagem de marca d'água: {e}")
         return None
+
+
+def search_pdf_password_file(self:Ui_Menu):
+    try:
+        file_dialog = QFileDialog()
+        file_dialog.setFileMode(QFileDialog.ExistingFile)
+        file_dialog.setNameFilter("Arquivo PDF (*.pdf)")
+
+        # file_dialog.setViewMode(QFileDialog)
+
+        if file_dialog.exec_() == QDialog.Accepted:
+            
+            selected_files = file_dialog.selectedFiles()
+
+            return selected_files[0] if selected_files else None
+        else:
+
+            return []
+    except Exception as e:
+
+        return []

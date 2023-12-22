@@ -4,6 +4,8 @@ from convert import excel_to_pdf, word_to_pdf, scale_image, img_to_pdf, pdf_to_b
 from display import render_img_byte
 import fitz  # PyMuPDF
 import os
+import PyPDF2
+from PySide6 import QtWidgets
 
 def add_pages(self:Ui_Menu):
     file_paths = search_file(self)
@@ -32,7 +34,33 @@ def add_pages(self:Ui_Menu):
                 os.remove(scaled_path)
         else:
             pdf =  file_path
-            add_page_dict(self,pdf)
+            pdf_password = False
+            with open(file_path, 'rb') as arquivo_entrada:
+                leitor = PyPDF2.PdfReader(arquivo_entrada)
+                if leitor.is_encrypted:
+                    while pdf_password == False:
+                        senha, ok_pressed = QtWidgets.QInputDialog.getText(self, 'Senha', 'Digite a senha do PDF:', QtWidgets.QLineEdit.Password)
+                        if ok_pressed:
+                            if leitor.decrypt(senha):
+                                escritor = PyPDF2.PdfWriter()
+                                # Adiciona todas as páginas ao novo arquivo
+                                for num_pagina in range(len(leitor.pages)):
+                                    pagina = leitor.pages[num_pagina]
+                                    escritor.add_page(pagina)
+
+                                # Salva o novo arquivo desbloqueado
+                                with open('temp_pdf_export_password_copy_safe.pdf', 'wb') as arquivo_saida:
+                                    escritor.write(arquivo_saida)
+                                pdf = 'temp_pdf_export_password_copy_safe.pdf'
+                                add_page_dict(self,pdf)
+                                os.remove('temp_pdf_export_password_copy_safe.pdf')
+                                pdf_password = True
+                        else:
+                            pdf_password = True
+                else:
+                    add_page_dict(self,pdf)
+
+
 
     total_page = len(self.icon_dict)
     self.n_pg_total.setText(f'/ {total_page}')
