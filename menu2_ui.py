@@ -571,9 +571,12 @@ class Ui_Menu(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 948, 619))
-        sizePolicy4.setHeightForWidth(self.scrollAreaWidgetContents.sizePolicy().hasHeightForWidth())
-        self.scrollAreaWidgetContents.setSizePolicy(sizePolicy4)
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, -59, 948, 619))
+        sizePolicy5 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy5.setHorizontalStretch(0)
+        sizePolicy5.setVerticalStretch(1)
+        sizePolicy5.setHeightForWidth(self.scrollAreaWidgetContents.sizePolicy().hasHeightForWidth())
+        self.scrollAreaWidgetContents.setSizePolicy(sizePolicy5)
         self.scrollAreaWidgetContents.setMinimumSize(QSize(0, 0))
         self.verticalLayout_6 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
@@ -588,8 +591,8 @@ class Ui_Menu(object):
         self.gridLayout_8.setObjectName(u"gridLayout_8")
         self.display = QLabel(self.scrollAreaWidgetContents)
         self.display.setObjectName(u"display")
-        sizePolicy4.setHeightForWidth(self.display.sizePolicy().hasHeightForWidth())
-        self.display.setSizePolicy(sizePolicy4)
+        sizePolicy5.setHeightForWidth(self.display.sizePolicy().hasHeightForWidth())
+        self.display.setSizePolicy(sizePolicy5)
         self.display.setMinimumSize(QSize(590, 590))
         self.display.setAlignment(Qt.AlignHCenter|Qt.AlignTop)
 
@@ -654,6 +657,17 @@ class Ui_Menu(object):
         self.delete_pg.setAlignment(Qt.AlignCenter)
 
         self.horizontalLayout.addWidget(self.delete_pg)
+
+        self.horizontalSpacer_8 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer_8)
+
+        self.wait_text = QLabel(self.frame)
+        self.wait_text.setObjectName(u"wait_text")
+        self.wait_text.setStyleSheet(u"color: rgb(255, 0, 4);\n"
+"font: 700 22pt \"Segoe UI\";")
+
+        self.horizontalLayout.addWidget(self.wait_text)
 
         self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
@@ -798,6 +812,7 @@ class Ui_Menu(object):
         self.delete_pg.setToolTip(QCoreApplication.translate("Menu", u"Deletar p\u00e1gina", None))
 #endif // QT_CONFIG(tooltip)
         self.delete_pg.setText(QCoreApplication.translate("Menu", u"delete_pg", None))
+        self.wait_text.setText("")
 #if QT_CONFIG(tooltip)
         self.zip_file.setToolTip(QCoreApplication.translate("Menu", u"Compactar", None))
 #endif // QT_CONFIG(tooltip)

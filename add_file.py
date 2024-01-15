@@ -6,10 +6,13 @@ import fitz  # PyMuPDF
 import os
 import PyPDF2
 from PySide6 import QtWidgets
+from PySide6.QtWidgets import QApplication
+
 
 def add_pages(self:Ui_Menu):
     file_paths = search_file(self)
-
+    self.wait_text.setText('Aguarde')
+    QApplication.processEvents()
     for file_path in file_paths:
         original_file_path = file_path
 
@@ -64,7 +67,7 @@ def add_pages(self:Ui_Menu):
 
     total_page = len(self.icon_dict)
     self.n_pg_total.setText(f'/ {total_page}')
-
+    self.wait_text.setText('')
 
                 
 def add_page_dict(self:Ui_Menu, pdf):

@@ -1,5 +1,5 @@
 from menu2_ui import Ui_Menu
-from PySide6.QtWidgets import  QFileDialog, QDialog, QMessageBox
+from PySide6.QtWidgets import  QFileDialog, QDialog, QMessageBox, QApplication
 import fitz
 from convert import base64_to_pdf, pdf_to_word, pdf_to_excel, pdf_to_png, pdf_to_jpg
 import os
@@ -19,6 +19,8 @@ def save_file_pdf(self:Ui_Menu):
             sorted_pages = sorted(self.icon_dict.items(), key=lambda x: int(x[1]["atual"]))
 
             doc_saida = fitz.open()
+            self.wait_text.setText('Aguarde')
+            QApplication.processEvents()
             for page_number, page_data in sorted_pages:
                 base64_to_file = base64_to_pdf(page_data["base64_pdf"],'temp_pdf_export_base64_to_pdf.pdf')
                 doc_entrada = fitz.open()
@@ -31,6 +33,7 @@ def save_file_pdf(self:Ui_Menu):
 
             doc_saida.save(save_path)
             doc_saida.close()
+            self.wait_text.setText('')
 
 def save_file_word(self:Ui_Menu):
     if not self.listWidget.count():
@@ -40,7 +43,8 @@ def save_file_word(self:Ui_Menu):
         if save_path:
             # Ordenar o dicionário com base no número da página da aplicação
             sorted_pages = sorted(self.icon_dict.items(), key=lambda x: int(x[1]["atual"]))
-
+            self.wait_text.setText('Aguarde')
+            QApplication.processEvents()
             doc_saida = fitz.open()
             for page_number, page_data in sorted_pages:
                 base64_to_file = base64_to_pdf(page_data["base64_pdf"],'temp_pdf_export_base64_to_pdf.pdf')
@@ -57,6 +61,7 @@ def save_file_word(self:Ui_Menu):
 
             pdf_to_word(self,'temp_pdf_export_to_word.pdf',save_path)
             os.remove('temp_pdf_export_to_word.pdf')
+            self.wait_text.setText('')
 
 
 def save_file_excel(self:Ui_Menu):
@@ -67,7 +72,8 @@ def save_file_excel(self:Ui_Menu):
         if save_path:
             # Ordenar o dicionário com base no número da página da aplicação
             sorted_pages = sorted(self.icon_dict.items(), key=lambda x: int(x[1]["atual"]))
-
+            self.wait_text.setText('Aguarde')
+            QApplication.processEvents()
             doc_saida = fitz.open()
             for page_number, page_data in sorted_pages:
                 base64_to_file = base64_to_pdf(page_data["base64_pdf"],'temp_pdf_export_base64_to_pdf.pdf')
@@ -83,6 +89,7 @@ def save_file_excel(self:Ui_Menu):
             doc_saida.close()
             pdf_to_excel(self,'temp_pdf_export_to_excel.pdf',save_path)
             os.remove('temp_pdf_export_to_excel.pdf')
+            self.wait_text.setText('')
 
 def save_file_png(self:Ui_Menu):
     if not self.listWidget.count():
@@ -92,7 +99,8 @@ def save_file_png(self:Ui_Menu):
         if save_path:
             # Ordenar o dicionário com base no número da página da aplicação
             sorted_pages = sorted(self.icon_dict.items(), key=lambda x: int(x[1]["atual"]))
-
+            self.wait_text.setText('Aguarde')
+            QApplication.processEvents()
             doc_saida = fitz.open()
             for page_number, page_data in sorted_pages:
                 base64_to_file = base64_to_pdf(page_data["base64_pdf"],'temp_pdf_export_base64_to_pdf.pdf')
@@ -108,7 +116,7 @@ def save_file_png(self:Ui_Menu):
             doc_saida.close()
             pdf_to_png(self,'temp_pdf_export_to_excel.pdf',save_path)
             os.remove('temp_pdf_export_to_excel.pdf')
-
+            self.wait_text.setText('')
 
 def save_file_jpg(self:Ui_Menu):
     if not self.listWidget.count():
@@ -118,7 +126,8 @@ def save_file_jpg(self:Ui_Menu):
         if save_path:
             # Ordenar o dicionário com base no número da página da aplicação
             sorted_pages = sorted(self.icon_dict.items(), key=lambda x: int(x[1]["atual"]))
-
+            self.wait_text.setText('Aguarde')
+            QApplication.processEvents()
             doc_saida = fitz.open()
             for page_number, page_data in sorted_pages:
                 base64_to_file = base64_to_pdf(page_data["base64_pdf"],'temp_pdf_export_base64_to_pdf.pdf')
@@ -134,7 +143,7 @@ def save_file_jpg(self:Ui_Menu):
             doc_saida.close()
             pdf_to_jpg(self,'temp_pdf_export_to_excel.pdf',save_path)
             os.remove('temp_pdf_export_to_excel.pdf')
-
+            self.wait_text.setText('')
 
 
 def zip_file(self: Ui_Menu):
@@ -144,6 +153,8 @@ def zip_file(self: Ui_Menu):
         save_path, _ = QFileDialog.getSaveFileName(self, "Salvar ZIP", "", "ZIP Files (*.zip)")
         if save_path:
             sorted_pages = sorted(self.icon_dict.items(), key=lambda x: int(x[1]["atual"]))
+            self.wait_text.setText('Aguarde')
+            QApplication.processEvents()
             doc_saida = fitz.open()
             for page_number, page_data in sorted_pages:
                 base64_to_file = base64_to_pdf(page_data["base64_pdf"], 'temp_pdf_export_base64_to_pdf.pdf')
@@ -163,5 +174,5 @@ def zip_file(self: Ui_Menu):
                 zipf.write(temp_pdf_path, os.path.basename(temp_pdf_path))
 
             os.remove(temp_pdf_path)
-
+            self.wait_text.setText('')
             QMessageBox.information(self, "Sucesso", "Arquivo compactado com sucesso!")

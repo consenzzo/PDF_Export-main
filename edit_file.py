@@ -1,5 +1,5 @@
 from menu2_ui import Ui_Menu
-from PySide6.QtWidgets import QMessageBox, QListWidgetItem
+from PySide6.QtWidgets import QMessageBox, QListWidgetItem, QApplication
 from PySide6.QtGui import QPixmap, QIcon, QTransform
 from PySide6.QtCore import QByteArray, QBuffer, QIODevice, QSize, Qt, Slot
 import base64
@@ -23,6 +23,8 @@ import io
 from reportlab.lib.pagesizes import letter
 import re
 from add_file import add_pages
+
+
 
 def delete_selected_page(self:Ui_Menu):
     selected_row = self.listWidget.currentRow()
@@ -199,10 +201,11 @@ def on_dropped(self:Ui_Menu, initial, final):
 
 
 def add_watermark(self: Ui_Menu):
-
+    
     watermark_path_search = search_watermark(self)
 
-
+    self.wait_text.setText('Aguarde')
+    QApplication.processEvents()
     for item_data in self.icon_dict.values():
         watermark_path = watermark_path_search
         self.listWidget.setCurrentRow(int(item_data["atual"]) - 1)
@@ -253,7 +256,7 @@ def add_watermark(self: Ui_Menu):
         current_item.setSizeHint(QSize(pixmap.size()))
         os.remove('pdf_opacity_temp.pdf')
         display_image(self)
-
+        self.wait_text.setText('')
 
 
 
@@ -416,9 +419,10 @@ def remove_watermark(self: Ui_Menu):
         resultado = mensagem_alerta.exec_()
 
         # Verificar se o botão Ok foi pressionado
-        if resultado == QMessageBox.Ok:
-            print("Botão OK pressionado")
-        
+        # if resultado == QMessageBox.Ok:
+        #     print("Botão OK pressionado")
+        self.wait_text.setText('Aguarde')
+        QApplication.processEvents()
         for item_data in self.icon_dict.values():
             self.listWidget.setCurrentRow(int(item_data["atual"]) - 1)
             current_item = self.listWidget.currentItem()
@@ -471,7 +475,7 @@ def remove_watermark(self: Ui_Menu):
                 pass
             os.remove(pdf_file)
             display_image(self)
-
+            self.wait_text.setText('')
 
 
             
@@ -570,6 +574,8 @@ def add_footer(self: Ui_Menu):
     if not self.listWidget.count():
         file_paths = add_pages(self)
     if self.listWidget.count():
+        self.wait_text.setText('Aguarde')
+        QApplication.processEvents()
         for item_data in self.icon_dict.values():
             self.listWidget.setCurrentRow(int(item_data["atual"]) - 1)
             current_item = self.listWidget.currentItem()
@@ -604,7 +610,7 @@ def add_footer(self: Ui_Menu):
                 pass
             os.remove(pdf_file)
             display_image(self)
-
+            self.wait_text.setText('')
 
 
 
@@ -666,6 +672,8 @@ def remove_n_page(self:Ui_Menu):
     if not self.listWidget.count():
         file_paths = add_pages(self)
     if self.listWidget.count():
+        self.wait_text.setText('Aguarde')
+        QApplication.processEvents()
         for item_data in self.icon_dict.values():
             self.listWidget.setCurrentRow(int(item_data["atual"]) - 1)
             current_item = self.listWidget.currentItem()
@@ -699,7 +707,7 @@ def remove_n_page(self:Ui_Menu):
             os.remove(pdf_file)
             os.remove('temp_n_page_pdf_export.pdf')
             display_image(self)
-
+            self.wait_text.setText('')
 
 
 
