@@ -22,6 +22,7 @@ import shutil
 import io
 from reportlab.lib.pagesizes import letter
 import re
+from add_file import add_pages
 
 def delete_selected_page(self:Ui_Menu):
     selected_row = self.listWidget.currentRow()
@@ -398,75 +399,78 @@ def remover_fundo_branco(caminho_da_imagem, caminho_da_saida):
 
 
 def remove_watermark(self: Ui_Menu):
-    mensagem_alerta = QMessageBox()
-    mensagem_alerta.setIcon(QMessageBox.Warning)
+    if not self.listWidget.count():
+        file_paths = add_pages(self)
+    if self.listWidget.count():
+        mensagem_alerta = QMessageBox()
+        mensagem_alerta.setIcon(QMessageBox.Warning)
 
-    # Definir o título e o texto da mensagem
-    mensagem_alerta.setWindowTitle("Alerta")
-    mensagem_alerta.setText("Lembre-se de preservar a identidade visual com cuidado ao remover a marca d'água. Respeite o trabalho alheio e mantenha a integridade das criações.")
+        # Definir o título e o texto da mensagem
+        mensagem_alerta.setWindowTitle("Alerta")
+        mensagem_alerta.setText("Lembre-se de preservar a identidade visual com cuidado ao remover a marca d'água. Respeite o trabalho alheio e mantenha a integridade das criações.")
 
-    # Adicionar um botão de Ok
-    mensagem_alerta.addButton(QMessageBox.Ok)
+        # Adicionar um botão de Ok
+        mensagem_alerta.addButton(QMessageBox.Ok)
 
-    # Exibir a mensagem de alerta e aguardar a resposta do usuário
-    resultado = mensagem_alerta.exec_()
+        # Exibir a mensagem de alerta e aguardar a resposta do usuário
+        resultado = mensagem_alerta.exec_()
 
-    # Verificar se o botão Ok foi pressionado
-    if resultado == QMessageBox.Ok:
-        print("Botão OK pressionado")
-    
-    for item_data in self.icon_dict.values():
-        self.listWidget.setCurrentRow(int(item_data["atual"]) - 1)
-        current_item = self.listWidget.currentItem()
-        # base64_dict = item_data["base64_pdf"]
-        pdf_file = base64_to_pdf(item_data["base64_pdf"],'temp_base_pdfwater_export.pdf')
-         # Tenta remover a marca d'água usando remove_watermark_type01
-        remove_watermark_type01_success = remove_watermark_type01(pdf_file, 'temp_output_export_water.pdf')
-        # Se remove_watermark_type01 não removeu nada, chama remove_watermark_type02
-        if not remove_watermark_type01_success:
-            
-            remove_watermark_type02_success = remove_watermark_type02(pdf_file, 'temp_output_export_water.pdf')
-
-            if not remove_watermark_type02_success:
-                shutil.copy(pdf_file, 'temp_output_export_water.pdf')
-                new_pdf = 'temp_output_export_water.pdf'
-            else:
-                pdf_to_word(self, 'temp_output_export_water.pdf', 'temp_output_export_water.docx')
-                new_pdf = word_to_pdf(self, 'temp_output_export_water.docx')
-        else:
-            new_pdf = 'temp_output_export_water.pdf'
-
-        base64_new_pdf = pdf_to_base64(new_pdf,0)
-        item_data["watermark_base64_pdf"] = None
-        item_data["base64_pdf"] = base64_new_pdf
-        # self.icon_dict[int(item_data["atual"])]["watermark_base64_pdf"] = None
-        # self.icon_dict[int(item_data["atual"])]["base64_pdf"] = base64_new_pdf
-
-        # Salva as alterações no novo arquivo PDF
-        pdf_document = fitz.open(new_pdf)
-        new_page = pdf_document.load_page(0)
-        img_bytes = new_page.get_pixmap()
-        img_bytes = img_bytes.tobytes()
-
-        # Fecha o arquivo PDF
-        pdf_document.close()
-
-        # self.icon_dict[int(item_data["atual"])]["icon_bytes"] = img_bytes
-        item_data["icon_bytes"] = img_bytes
-        # Atualize diretamente o ícone do item atual na QListWidget
-        pixmap = QPixmap()
-        pixmap.loadFromData(img_bytes)
-        pixmap = pixmap.scaledToHeight(200, Qt.SmoothTransformation)
+        # Verificar se o botão Ok foi pressionado
+        if resultado == QMessageBox.Ok:
+            print("Botão OK pressionado")
         
-        current_item.setIcon(QIcon(pixmap))
-        current_item.setSizeHint(QSize(pixmap.size()))
-        os.remove(new_pdf)
-        try:
-            os.remove('temp_output_export_water.docx')
-        except:
-            pass
-        os.remove(pdf_file)
-        display_image(self)
+        for item_data in self.icon_dict.values():
+            self.listWidget.setCurrentRow(int(item_data["atual"]) - 1)
+            current_item = self.listWidget.currentItem()
+            # base64_dict = item_data["base64_pdf"]
+            pdf_file = base64_to_pdf(item_data["base64_pdf"],'temp_base_pdfwater_export.pdf')
+            # Tenta remover a marca d'água usando remove_watermark_type01
+            remove_watermark_type01_success = remove_watermark_type01(pdf_file, 'temp_output_export_water.pdf')
+            # Se remove_watermark_type01 não removeu nada, chama remove_watermark_type02
+            if not remove_watermark_type01_success:
+                
+                remove_watermark_type02_success = remove_watermark_type02(pdf_file, 'temp_output_export_water.pdf')
+
+                if not remove_watermark_type02_success:
+                    shutil.copy(pdf_file, 'temp_output_export_water.pdf')
+                    new_pdf = 'temp_output_export_water.pdf'
+                else:
+                    pdf_to_word(self, 'temp_output_export_water.pdf', 'temp_output_export_water.docx')
+                    new_pdf = word_to_pdf(self, 'temp_output_export_water.docx')
+            else:
+                new_pdf = 'temp_output_export_water.pdf'
+
+            base64_new_pdf = pdf_to_base64(new_pdf,0)
+            item_data["watermark_base64_pdf"] = None
+            item_data["base64_pdf"] = base64_new_pdf
+            # self.icon_dict[int(item_data["atual"])]["watermark_base64_pdf"] = None
+            # self.icon_dict[int(item_data["atual"])]["base64_pdf"] = base64_new_pdf
+
+            # Salva as alterações no novo arquivo PDF
+            pdf_document = fitz.open(new_pdf)
+            new_page = pdf_document.load_page(0)
+            img_bytes = new_page.get_pixmap()
+            img_bytes = img_bytes.tobytes()
+
+            # Fecha o arquivo PDF
+            pdf_document.close()
+
+            # self.icon_dict[int(item_data["atual"])]["icon_bytes"] = img_bytes
+            item_data["icon_bytes"] = img_bytes
+            # Atualize diretamente o ícone do item atual na QListWidget
+            pixmap = QPixmap()
+            pixmap.loadFromData(img_bytes)
+            pixmap = pixmap.scaledToHeight(200, Qt.SmoothTransformation)
+            
+            current_item.setIcon(QIcon(pixmap))
+            current_item.setSizeHint(QSize(pixmap.size()))
+            os.remove(new_pdf)
+            try:
+                os.remove('temp_output_export_water.docx')
+            except:
+                pass
+            os.remove(pdf_file)
+            display_image(self)
 
 
 
@@ -563,40 +567,43 @@ def remove_watermark_type01(input_pdf, output_pdf):
     
 
 def add_footer(self: Ui_Menu):
-    for item_data in self.icon_dict.values():
-        self.listWidget.setCurrentRow(int(item_data["atual"]) - 1)
-        current_item = self.listWidget.currentItem()
-        pdf_file = base64_to_pdf(item_data["base64_pdf"],'temp_n_page_pdf_export.pdf')
-        add_footer_n_page(pdf_file,pdf_file,right_text=item_data["atual"])
-        base64_new_pdf = pdf_to_base64(pdf_file,0)
-        item_data["base64_pdf"] = base64_new_pdf
-        # self.icon_dict[int(item_data["atual"])]["base64_pdf"] = base64_new_pdf
+    if not self.listWidget.count():
+        file_paths = add_pages(self)
+    if self.listWidget.count():
+        for item_data in self.icon_dict.values():
+            self.listWidget.setCurrentRow(int(item_data["atual"]) - 1)
+            current_item = self.listWidget.currentItem()
+            pdf_file = base64_to_pdf(item_data["base64_pdf"],'temp_n_page_pdf_export.pdf')
+            add_footer_n_page(pdf_file,pdf_file,right_text=item_data["atual"])
+            base64_new_pdf = pdf_to_base64(pdf_file,0)
+            item_data["base64_pdf"] = base64_new_pdf
+            # self.icon_dict[int(item_data["atual"])]["base64_pdf"] = base64_new_pdf
 
 
-        # Salva as alterações no novo arquivo PDF
-        pdf_document = fitz.open(pdf_file)
-        new_page = pdf_document.load_page(0)
-        img_bytes = new_page.get_pixmap()
-        img_bytes = img_bytes.tobytes()
+            # Salva as alterações no novo arquivo PDF
+            pdf_document = fitz.open(pdf_file)
+            new_page = pdf_document.load_page(0)
+            img_bytes = new_page.get_pixmap()
+            img_bytes = img_bytes.tobytes()
 
-        # Fecha o arquivo PDF
-        pdf_document.close()
+            # Fecha o arquivo PDF
+            pdf_document.close()
 
-        # self.icon_dict[int(item_data["atual"])]["icon_bytes"] = img_bytes
-        item_data["icon_bytes"] = img_bytes
-        # Atualize diretamente o ícone do item atual na QListWidget
-        pixmap = QPixmap()
-        pixmap.loadFromData(img_bytes)
-        pixmap = pixmap.scaledToHeight(200, Qt.SmoothTransformation)
-        
-        current_item.setIcon(QIcon(pixmap))
-        current_item.setSizeHint(QSize(pixmap.size()))
-        try:
-            os.remove('temp_output_export_water.pdf')
-        except:
-            pass
-        os.remove(pdf_file)
-        display_image(self)
+            # self.icon_dict[int(item_data["atual"])]["icon_bytes"] = img_bytes
+            item_data["icon_bytes"] = img_bytes
+            # Atualize diretamente o ícone do item atual na QListWidget
+            pixmap = QPixmap()
+            pixmap.loadFromData(img_bytes)
+            pixmap = pixmap.scaledToHeight(200, Qt.SmoothTransformation)
+            
+            current_item.setIcon(QIcon(pixmap))
+            current_item.setSizeHint(QSize(pixmap.size()))
+            try:
+                os.remove('temp_output_export_water.pdf')
+            except:
+                pass
+            os.remove(pdf_file)
+            display_image(self)
 
 
 
@@ -656,39 +663,42 @@ def add_footer_n_page(input_pdf, output_pdf,
         output_pdf_writer.write(output_file)
 
 def remove_n_page(self:Ui_Menu):
-    for item_data in self.icon_dict.values():
-        self.listWidget.setCurrentRow(int(item_data["atual"]) - 1)
-        current_item = self.listWidget.currentItem()
-        pdf_file = base64_to_pdf(item_data["base64_pdf"],'temp_n_page_pdf_export.pdf')
-        remove_n_page_footer(pdf_file,'temp_n_page_pdf_export.pdf')
-        base64_new_pdf = pdf_to_base64('temp_n_page_pdf_export.pdf',0)
-        # self.icon_dict[int(item_data["atual"])]["base64_pdf"] = base64_new_pdf
-        item_data["base64_pdf"] = base64_new_pdf
-        # Salva as alterações no novo arquivo PDF
-        pdf_document = fitz.open('temp_n_page_pdf_export.pdf')
-        new_page = pdf_document.load_page(0)
-        img_bytes = new_page.get_pixmap()
-        img_bytes = img_bytes.tobytes()
+    if not self.listWidget.count():
+        file_paths = add_pages(self)
+    if self.listWidget.count():
+        for item_data in self.icon_dict.values():
+            self.listWidget.setCurrentRow(int(item_data["atual"]) - 1)
+            current_item = self.listWidget.currentItem()
+            pdf_file = base64_to_pdf(item_data["base64_pdf"],'temp_n_page_pdf_export.pdf')
+            remove_n_page_footer(pdf_file,'temp_n_page_pdf_export.pdf')
+            base64_new_pdf = pdf_to_base64('temp_n_page_pdf_export.pdf',0)
+            # self.icon_dict[int(item_data["atual"])]["base64_pdf"] = base64_new_pdf
+            item_data["base64_pdf"] = base64_new_pdf
+            # Salva as alterações no novo arquivo PDF
+            pdf_document = fitz.open('temp_n_page_pdf_export.pdf')
+            new_page = pdf_document.load_page(0)
+            img_bytes = new_page.get_pixmap()
+            img_bytes = img_bytes.tobytes()
 
-        # Fecha o arquivo PDF
-        pdf_document.close()
+            # Fecha o arquivo PDF
+            pdf_document.close()
 
-        # self.icon_dict[int(item_data["atual"])]["icon_bytes"] = img_bytes
-        item_data["icon_bytes"] = img_bytes
-        # Atualize diretamente o ícone do item atual na QListWidget
-        pixmap = QPixmap()
-        pixmap.loadFromData(img_bytes)
-        pixmap = pixmap.scaledToHeight(200, Qt.SmoothTransformation)
-        
-        current_item.setIcon(QIcon(pixmap))
-        current_item.setSizeHint(QSize(pixmap.size()))
-        try:
-            os.remove('temp_output_export_water.pdf')
-        except:
-            pass
-        os.remove(pdf_file)
-        os.remove('temp_n_page_pdf_export.pdf')
-        display_image(self)
+            # self.icon_dict[int(item_data["atual"])]["icon_bytes"] = img_bytes
+            item_data["icon_bytes"] = img_bytes
+            # Atualize diretamente o ícone do item atual na QListWidget
+            pixmap = QPixmap()
+            pixmap.loadFromData(img_bytes)
+            pixmap = pixmap.scaledToHeight(200, Qt.SmoothTransformation)
+            
+            current_item.setIcon(QIcon(pixmap))
+            current_item.setSizeHint(QSize(pixmap.size()))
+            try:
+                os.remove('temp_output_export_water.pdf')
+            except:
+                pass
+            os.remove(pdf_file)
+            os.remove('temp_n_page_pdf_export.pdf')
+            display_image(self)
 
 
 

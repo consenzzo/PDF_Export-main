@@ -48,8 +48,11 @@ def zoom_out(self:Ui_Menu):
         
 
 def zoom_slider_changed(self:Ui_Menu, value):
-    zoom_factor = (value / 25.0)
-    update_zoom(self, zoom_factor)
+    if not self.listWidget.count():
+        pass
+    else:
+        zoom_factor = (value / 25.0)
+        update_zoom(self, zoom_factor)
 
 def update_zoom(self:Ui_Menu, zoom_factor):
         selected_row = self.listWidget.currentRow()
