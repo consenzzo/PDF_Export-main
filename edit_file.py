@@ -398,6 +398,23 @@ def remover_fundo_branco(caminho_da_imagem, caminho_da_saida):
 
 
 def remove_watermark(self: Ui_Menu):
+    mensagem_alerta = QMessageBox()
+    mensagem_alerta.setIcon(QMessageBox.Warning)
+
+    # Definir o título e o texto da mensagem
+    mensagem_alerta.setWindowTitle("Alerta")
+    mensagem_alerta.setText("Lembre-se de preservar a identidade visual com cuidado ao remover a marca d'água. Respeite o trabalho alheio e mantenha a integridade das criações.")
+
+    # Adicionar um botão de Ok
+    mensagem_alerta.addButton(QMessageBox.Ok)
+
+    # Exibir a mensagem de alerta e aguardar a resposta do usuário
+    resultado = mensagem_alerta.exec_()
+
+    # Verificar se o botão Ok foi pressionado
+    if resultado == QMessageBox.Ok:
+        print("Botão OK pressionado")
+    
     for item_data in self.icon_dict.values():
         self.listWidget.setCurrentRow(int(item_data["atual"]) - 1)
         current_item = self.listWidget.currentItem()
