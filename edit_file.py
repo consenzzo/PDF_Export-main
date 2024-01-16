@@ -203,9 +203,9 @@ def on_dropped(self:Ui_Menu, initial, final):
 def add_watermark(self: Ui_Menu):
     
     watermark_path_search = search_watermark(self)
-
-    self.wait_text.setText('Aguarde')
-    QApplication.processEvents()
+    if watermark_path_search:
+        self.wait_text.setText('Aguarde')
+        QApplication.processEvents()
     for item_data in self.icon_dict.values():
         watermark_path = watermark_path_search
         self.listWidget.setCurrentRow(int(item_data["atual"]) - 1)
